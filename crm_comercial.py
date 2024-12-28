@@ -151,15 +151,17 @@ else:
         cerrar_sesion()
 
     # Página de Información de Cliente
+    # Página de Información de Cliente
     if page == "Información para gestión":
         filtered_data = data
-        unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
+        unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).sort_values(by="Jerarquia").reset_index(drop=True)
         total_clients = len(unique_clients)
+
         # Sección de búsqueda
-        st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda ordenada de Jerarquia</div>", unsafe_allow_html=True)
+        st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
         cols = st.columns([1, 1])
         with cols[0]:
-            input_jerarquia = st.text_input("Número", "", help="Ingrese la jerarquía del cliente y presione Enter")
+            input_jerarquia = st.text_input("Borre el numero antes de usar el boton de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
         with cols[1]:
             input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
 
@@ -193,61 +195,20 @@ else:
         cliente_index = max(0, min(cliente_index, total_clients - 1))
         st.session_state["cliente_index"] = cliente_index
 
-        # Obtener cliente actual
-        cliente_actual = unique_clients.iloc[cliente_index]
-        facturas_cliente = filtered_data[filtered_data["ID_CLIENTE"] == cliente_actual["ID_CLIENTE"]]
-        
-        # Agregamos un CSS personalizado para reducir el espacio solo en la clase 'compact-section'
-        # Nota: con line-height es que hago más pequeño el interlineado
-        st.markdown("""
-            <style>
-            .ajuste_interlineado {
-                font-size: 18px;
-                line-height: 2.2; /* Ajusta el interlineado aquí */
-                margin: 0;
-                padding: 0;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        
-        # CSS personalizado para mejorar el diseño del script
-        st.markdown("""
-            <style>
-            .ajuste_interlineado {
-                font-size: 18px;
-                line-height: 2.2;
-                margin: 0;
-                padding: 0;
-            }
-            .script-container {
-                background-color: #f9f9f9;  /* Color de fondo claro */
-                border: 2px solid #6495ed;  /* Borde azul */
-                border-radius: 8px;         /* Bordes redondeados */
-                padding: 15px;             /* Espaciado interno */
-                margin-bottom: 20px;       /* Espaciado con otros elementos */
-                font-size: 16px;
-                font-weight: bold;
-                color: #333;               /* Color del texto */
-            }
-            .script-title {
-                font-weight: bold;
-                color: #000080;
-                margin-bottom: 5px;
-                font-size: 18px;
-            }
-            </style>
-        """, unsafe_allow_html=True)
+        # Botones de navegación
+        cols_navigation = st.columns([1, 1])
+        with cols_navigation[0]:
+            if st.button("Anterior"):
+                st.session_state["cliente_index"] = max(cliente_index - 1, 0)
+        with cols_navigation[1]:
+            if st.button("Siguiente"):
+                st.session_state["cliente_index"] = min(cliente_index + 1, total_clients - 1)
 
-        # Mostrar el script con título
-        if "Script" in cliente_actual:
-            st.markdown(f"""
-                <div class="script-container">
-                    <div class="script-title">Script:</div>
-                    {cliente_actual['Script']}
-                </div>
-            """, unsafe_allow_html=True)
-        
-        # Sección 1: Información General del Cliente
+        # Obtener cliente actual
+        cliente_actual = unique_clients.iloc[st.session_state["cliente_index"]]
+        facturas_cliente = filtered_data[filtered_data["ID_CLIENTE"] == cliente_actual["ID_CLIENTE"]]
+
+        # Mostrar información del cliente actual
         st.markdown('<div class="ajuste_interlineado">', unsafe_allow_html=True)
         st.subheader("Información del Cliente")
         cols = st.columns(2)
@@ -282,8 +243,8 @@ else:
         with st.form(key=f"gestion_form"):
             gestion = st.selectbox(
                 "Gestión",
-                options=[None,"Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"],
-                index=0 if st.session_state.get(gestion_key) is None else 
+                options=[None, "Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"],
+                index=0 if st.session_state.get(gestion_key) is None else
                       ["Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"].index(st.session_state[gestion_key]),
             )
             comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
