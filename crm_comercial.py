@@ -208,6 +208,55 @@ else:
         cliente_actual = unique_clients.iloc[st.session_state["cliente_index"]]
         facturas_cliente = filtered_data[filtered_data["ID_CLIENTE"] == cliente_actual["ID_CLIENTE"]]
 
+        # Agregamos un CSS personalizado para reducir el espacio solo en la clase 'compact-section'
+        # Nota: con line-height es que hago más pequeño el interlineado
+        st.markdown("""
+            <style>
+            .ajuste_interlineado {
+                font-size: 18px;
+                line-height: 2.2; /* Ajusta el interlineado aquí */
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        
+        # CSS personalizado para mejorar el diseño del script
+        st.markdown("""
+            <style>
+            .ajuste_interlineado {
+                font-size: 18px;
+                line-height: 2.2;
+                margin: 0;
+                padding: 0;
+            }
+            .script-container {
+                background-color: #f9f9f9;  /* Color de fondo claro */
+                border: 2px solid #6495ed;  /* Borde azul */
+                border-radius: 8px;         /* Bordes redondeados */
+                padding: 15px;             /* Espaciado interno */
+                margin-bottom: 20px;       /* Espaciado con otros elementos */
+                font-size: 16px;
+                font-weight: bold;
+                color: #333;               /* Color del texto */
+            }
+            .script-title {
+                font-weight: bold;
+                color: #000080;
+                margin-bottom: 5px;
+                font-size: 18px;
+            }
+            </style>
+        """, unsafe_allow_html=True)
+        # Mostrar el script con título
+        if "Script" in cliente_actual:
+            st.markdown(f"""
+                <div class="script-container">
+                    <div class="script-title">Script:</div>
+                    {cliente_actual['Script']}
+                </div>
+            """, unsafe_allow_html=True)
+    
         # Mostrar información del cliente actual
         st.markdown('<div class="ajuste_interlineado">', unsafe_allow_html=True)
         st.subheader("Información del Cliente")
