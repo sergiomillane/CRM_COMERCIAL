@@ -328,7 +328,7 @@ else:
                 st.error(f"Error al guardar los cambios: {e}")
                 
         # Página de Información de Cliente
-    elif page == "CAT":
+    elif page == "ORIGINACION DE CREDITO":
         data_cat = data[data["Canal"]=="Originacion"]
         filtered_data = data_cat
         unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).sort_values(by="Jerarquia").reset_index(drop=True)
