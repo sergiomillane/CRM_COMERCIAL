@@ -91,7 +91,7 @@ usuarios = {
     "melissa_angulo": {"gestor": "Melissa Angulo Rios", "password": "Ok7Wsm", "admin": False},
     "oscar_eduardo": {"gestor": "Oscar Eduardo Sánchez Grande", "password": "FtQ7ZK", "admin": False},
     "reyna_berenice": {"gestor": "Reyna Berenice Salazar Cabrera", "password": "w7sZwz", "admin": False},
-    "saul_armando": {"gestor": "Saul Armando Lara Parra", "password": "eSLa6h", "admin": False},
+    "edgar_adolfo": {"gestor": "Edgar Adoldo Quiñonez Coral", "password": "eSLa6h", "admin": False},
     "marlene_lopez": {"gestor": "Silvia Marlene Lopez", "password": "Marlene_vb$", "admin": False},
     "liliana_cortes": {"gestor": "Liliana Cortes", "password": "admin_vb3$", "admin": True},
     "carlos_quinonez": {"gestor": "Carlos Quiñonez", "password": "admin_vb3$", "admin": True},
