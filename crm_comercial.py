@@ -91,8 +91,10 @@ usuarios = {
     "melissa_angulo": {"gestor": "Melissa Angulo Rios", "password": "Ok7Wsm", "admin": False},
     "oscar_eduardo": {"gestor": "Oscar Eduardo Sánchez Grande", "password": "FtQ7ZK", "admin": False},
     "reyna_berenice": {"gestor": "Reyna Berenice Salazar Cabrera", "password": "w7sZwz", "admin": False},
-    "edgar_adolfo": {"gestor": "Edgar Adoldo Quiñonez Coral", "password": "eSLa6h", "admin": False},
-    "marlene_lopez": {"gestor": "Silvia Marlene Lopez", "password": "Marlene_vb$", "admin": False},
+    "nancy_burgos": {"gestor": "NANCY BURGOS", "password": "w7sZwz", "admin": False},
+    "lorena_andrade": {"gestor": "LORENA ANDRADE", "password": "w7sZwz", "admin": False},
+    "edgar_adolfo": {"gestor": "EDGAR QUIÑONEZ", "password": "eSLa6h", "admin": False},
+    "marlene_lopez": {"gestor": "SILVIA LOPEZ", "password": "Marlene_vb$", "admin": False},
     "liliana_cortes": {"gestor": "Liliana Cortes", "password": "admin_vb3$", "admin": True},
     "carlos_quinonez": {"gestor": "Carlos Quiñonez", "password": "admin_vb3$", "admin": True},
     "roberto_boada": {"gestor": "Roberto Boada", "password": "admin_vb3$", "admin": True},
@@ -139,7 +141,7 @@ else:
 
     gestor_autenticado = st.session_state["gestor"].strip()
     is_admin = st.session_state["admin"]
-    query = "SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC" if is_admin else f"SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC "
+    query = "SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC" if is_admin else f"SELECT * FROM CRM_COMERCIAL WHERE Gestor = '{gestor_autenticado}' ORDER BY Jerarquia ASC "
     data = pd.read_sql(query, engine)
 
     # Sidebar para navegación y botón de cerrar sesión
