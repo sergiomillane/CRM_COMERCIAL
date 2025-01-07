@@ -155,178 +155,181 @@ else:
     # Página de Información de Cliente
     if page == "CAT":
         data_cat = data[data["Canal"]=="CAT"]
-        filtered_data = data_cat
-        unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).sort_values(by="Jerarquia").reset_index(drop=True)
-        total_clients = len(unique_clients)
+        if data_cat.empty:
+            st.warning("No tienes acceso a esta pestaña.")
+        else:
+            filtered_data = data_cat
+            unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).sort_values(by="Jerarquia").reset_index(drop=True)
+            total_clients = len(unique_clients)
 
-        # Sección de búsqueda
-        st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
-        cols = st.columns([1, 1])
-        with cols[0]:
-            input_jerarquia = st.text_input("Borre el numero antes de usar el boton de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
-        with cols[1]:
-            input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
+            # Sección de búsqueda
+            st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
+            cols = st.columns([1, 1])
+            with cols[0]:
+                input_jerarquia = st.text_input("Borre el numero antes de usar el boton de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
+            with cols[1]:
+                input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
 
-        # Búsqueda por Jerarquía
-        if input_jerarquia:
-            try:
-                input_jerarquia = int(input_jerarquia)
-                cliente_index = unique_clients[unique_clients["Jerarquia"] == input_jerarquia].index
-                if len(cliente_index) > 0:
-                    st.session_state["cliente_index"] = cliente_index[0]
-                else:
-                    st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
-            except ValueError:
-                st.error("Por favor, ingrese un número válido.")
+            # Búsqueda por Jerarquía
+            if input_jerarquia:
+                try:
+                    input_jerarquia = int(input_jerarquia)
+                    cliente_index = unique_clients[unique_clients["Jerarquia"] == input_jerarquia].index
+                    if len(cliente_index) > 0:
+                        st.session_state["cliente_index"] = cliente_index[0]
+                    else:
+                        st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
+                except ValueError:
+                    st.error("Por favor, ingrese un número válido.")
 
-        # Búsqueda por ID Cliente
-        if input_id_cliente:
-            try:
-                cliente_index = unique_clients[unique_clients["ID_CLIENTE"] == input_id_cliente].index
-                if len(cliente_index) > 0:
-                    st.session_state["cliente_index"] = cliente_index[0]
-                else:
-                    st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
-            except ValueError:
-                st.error("Por favor, ingrese un ID válido.")
+            # Búsqueda por ID Cliente
+            if input_id_cliente:
+                try:
+                    cliente_index = unique_clients[unique_clients["ID_CLIENTE"] == input_id_cliente].index
+                    if len(cliente_index) > 0:
+                        st.session_state["cliente_index"] = cliente_index[0]
+                    else:
+                        st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
+                except ValueError:
+                    st.error("Por favor, ingrese un ID válido.")
 
-        # Validar el índice del cliente actual
-        if "cliente_index" not in st.session_state:
-            st.session_state["cliente_index"] = 0
-        cliente_index = st.session_state["cliente_index"]
-        cliente_index = max(0, min(cliente_index, total_clients - 1))
-        st.session_state["cliente_index"] = cliente_index
+            # Validar el índice del cliente actual
+            if "cliente_index" not in st.session_state:
+                st.session_state["cliente_index"] = 0
+            cliente_index = st.session_state["cliente_index"]
+            cliente_index = max(0, min(cliente_index, total_clients - 1))
+            st.session_state["cliente_index"] = cliente_index
 
-        # Botones de navegación
-        cols_navigation = st.columns([1, 1])
-        with cols_navigation[0]:
-            if st.button("Anterior"):
-                st.session_state["cliente_index"] = max(cliente_index - 1, 0)
-        with cols_navigation[1]:
-            if st.button("Siguiente"):
-                st.session_state["cliente_index"] = min(cliente_index + 1, total_clients - 1)
+            # Botones de navegación
+            cols_navigation = st.columns([1, 1])
+            with cols_navigation[0]:
+                if st.button("Anterior"):
+                    st.session_state["cliente_index"] = max(cliente_index - 1, 0)
+            with cols_navigation[1]:
+                if st.button("Siguiente"):
+                    st.session_state["cliente_index"] = min(cliente_index + 1, total_clients - 1)
 
-        # Obtener cliente actual
-        cliente_actual = unique_clients.iloc[st.session_state["cliente_index"]]
-        facturas_cliente = filtered_data[filtered_data["ID_CLIENTE"] == cliente_actual["ID_CLIENTE"]]
+            # Obtener cliente actual
+            cliente_actual = unique_clients.iloc[st.session_state["cliente_index"]]
+            facturas_cliente = filtered_data[filtered_data["ID_CLIENTE"] == cliente_actual["ID_CLIENTE"]]
 
-        # Agregamos un CSS personalizado para reducir el espacio solo en la clase 'compact-section'
-        # Nota: con line-height es que hago más pequeño el interlineado
-        st.markdown("""
-            <style>
-            .ajuste_interlineado {
-                font-size: 18px;
-                line-height: 2.2; /* Ajusta el interlineado aquí */
-                margin: 0;
-                padding: 0;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        
-        # CSS personalizado para mejorar el diseño del script
-        st.markdown("""
-            <style>
-            .ajuste_interlineado {
-                font-size: 18px;
-                line-height: 2.2;
-                margin: 0;
-                padding: 0;
-            }
-            .script-container {
-                background-color: #f9f9f9;  /* Color de fondo claro */
-                border: 2px solid #6495ed;  /* Borde azul */
-                border-radius: 8px;         /* Bordes redondeados */
-                padding: 15px;             /* Espaciado interno */
-                margin-bottom: 20px;       /* Espaciado con otros elementos */
-                font-size: 16px;
-                font-weight: bold;
-                color: #333;               /* Color del texto */
-            }
-            .script-title {
-                font-weight: bold;
-                color: #000080;
-                margin-bottom: 5px;
-                font-size: 18px;
-            }
-            </style>
-        """, unsafe_allow_html=True)
-        # Mostrar el script con título
-        if "Script" in cliente_actual:
-            st.markdown(f"""
-                <div class="script-container">
-                    <div class="script-title">Script:</div>
-                    {cliente_actual['Script']}
-                </div>
+            # Agregamos un CSS personalizado para reducir el espacio solo en la clase 'compact-section'
+            # Nota: con line-height es que hago más pequeño el interlineado
+            st.markdown("""
+                <style>
+                .ajuste_interlineado {
+                    font-size: 18px;
+                    line-height: 2.2; /* Ajusta el interlineado aquí */
+                    margin: 0;
+                    padding: 0;
+                }
+                </style>
             """, unsafe_allow_html=True)
-    
-        # Mostrar información del cliente actual
-        st.markdown('<div class="ajuste_interlineado">', unsafe_allow_html=True)
-        st.subheader("Información del Cliente")
-        cols = st.columns(2)
-        with cols[0]:
-            st.write(f"**Nombre Solicitante:** {cliente_actual['Solicitante']}")
-            st.write(f"**ID cliente:** {cliente_actual['ID_CLIENTE']}")
-            st.write(f"**Folio:** {cliente_actual['Folio']}")
-            st.write(f"**Limite de credito:** {cliente_actual['Limite_de_credito']}")
-            st.write(f"**Fecha de aprobacion:** {cliente_actual['Fecha_Aprobacion']}")
-            st.write(f"**Ultima Gestion:** {cliente_actual['FECHA_GESTION']}")
-        with cols[1]:
-            st.write(f"**Telefono Celular:** {cliente_actual['Tel_Celular']}")
-            st.write(f"**Sucursal:** {cliente_actual['Sucursal']}")
-            st.write(f"**Gestion:** {cliente_actual['Gestion']}")
-            st.write(f"**Comentario:** {cliente_actual['Comentario']}")
-            st.write(f"**Categoria:** {cliente_actual['Segmento']}")
-            st.write(f"**Jerarquia:** {cliente_actual['Jerarquia']}")
-            st.markdown(
-                f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
-                unsafe_allow_html=True,
-            )
-        st.markdown('</div>', unsafe_allow_html=True)
+            
+            # CSS personalizado para mejorar el diseño del script
+            st.markdown("""
+                <style>
+                .ajuste_interlineado {
+                    font-size: 18px;
+                    line-height: 2.2;
+                    margin: 0;
+                    padding: 0;
+                }
+                .script-container {
+                    background-color: #f9f9f9;  /* Color de fondo claro */
+                    border: 2px solid #6495ed;  /* Borde azul */
+                    border-radius: 8px;         /* Bordes redondeados */
+                    padding: 15px;             /* Espaciado interno */
+                    margin-bottom: 20px;       /* Espaciado con otros elementos */
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #333;               /* Color del texto */
+                }
+                .script-title {
+                    font-weight: bold;
+                    color: #000080;
+                    margin-bottom: 5px;
+                    font-size: 18px;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+            # Mostrar el script con título
+            if "Script" in cliente_actual:
+                st.markdown(f"""
+                    <div class="script-container">
+                        <div class="script-title">Script:</div>
+                        {cliente_actual['Script']}
+                    </div>
+                """, unsafe_allow_html=True)
+        
+            # Mostrar información del cliente actual
+            st.markdown('<div class="ajuste_interlineado">', unsafe_allow_html=True)
+            st.subheader("Información del Cliente")
+            cols = st.columns(2)
+            with cols[0]:
+                st.write(f"**Nombre Solicitante:** {cliente_actual['Solicitante']}")
+                st.write(f"**ID cliente:** {cliente_actual['ID_CLIENTE']}")
+                st.write(f"**Folio:** {cliente_actual['Folio']}")
+                st.write(f"**Limite de credito:** {cliente_actual['Limite_de_credito']}")
+                st.write(f"**Fecha de aprobacion:** {cliente_actual['Fecha_Aprobacion']}")
+                st.write(f"**Ultima Gestion:** {cliente_actual['FECHA_GESTION']}")
+            with cols[1]:
+                st.write(f"**Telefono Celular:** {cliente_actual['Tel_Celular']}")
+                st.write(f"**Sucursal:** {cliente_actual['Sucursal']}")
+                st.write(f"**Gestion:** {cliente_actual['Gestion']}")
+                st.write(f"**Comentario:** {cliente_actual['Comentario']}")
+                st.write(f"**Categoria:** {cliente_actual['Segmento']}")
+                st.write(f"**Jerarquia:** {cliente_actual['Jerarquia']}")
+                st.markdown(
+                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
 
-        st.divider()
+            st.divider()
 
-        # Gestión del Cliente
-        st.subheader("Gestiones del Cliente")
-        gestion_key = f"gestion_{cliente_actual['ID_CLIENTE']}"
-        comentario_key = f"comentario_{cliente_actual['ID_CLIENTE']}"
+            # Gestión del Cliente
+            st.subheader("Gestiones del Cliente")
+            gestion_key = f"gestion_{cliente_actual['ID_CLIENTE']}"
+            comentario_key = f"comentario_{cliente_actual['ID_CLIENTE']}"
 
-        with st.form(key=f"gestion_form"):
-            gestion = st.selectbox(
-                "Gestión",
-                options=[None, "Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"],
-                index=0 if st.session_state.get(gestion_key) is None else
-                      ["Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"].index(st.session_state[gestion_key]),
-            )
-            comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
-            submit_button = st.form_submit_button("Guardar Cambios")
+            with st.form(key=f"gestion_form"):
+                gestion = st.selectbox(
+                    "Gestión",
+                    options=[None, "Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"],
+                    index=0 if st.session_state.get(gestion_key) is None else
+                          ["Contacto_Efectivo", "Contacto_NoEfectivo", "Sin_Contacto", "Sin_Cobertura"].index(st.session_state[gestion_key]),
+                )
+                comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
+                submit_button = st.form_submit_button("Guardar Cambios")
 
-        if submit_button:
-            st.session_state[gestion_key] = gestion
-            st.session_state[comentario_key] = comentario
-            try:
-                query_update = text("""
-                    UPDATE CRM_COMERCIAL
-                    SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
-                    WHERE ID_CLIENTE = :id_cliente
-                """)
-                query_insert = text("""
-                    INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION)
-                    VALUES (:id_cliente, :gestion, :comentario, GETDATE())
-                """)
-                with engine.begin() as conn:
-                    conn.execute(query_update, {
-                        "gestion": gestion,
-                        "comentario": comentario,
-                        "id_cliente": cliente_actual["ID_CLIENTE"],
-                    })
-                    conn.execute(query_insert, {
-                        "id_cliente": cliente_actual["ID_CLIENTE"],
-                        "gestion": gestion,
-                        "comentario": comentario,
-                    })
-                st.success("Gestión guardada exitosamente.")
-            except Exception as e:
-                st.error(f"Error al guardar los cambios: {e}")
+            if submit_button:
+                st.session_state[gestion_key] = gestion
+                st.session_state[comentario_key] = comentario
+                try:
+                    query_update = text("""
+                        UPDATE CRM_COMERCIAL
+                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                        WHERE ID_CLIENTE = :id_cliente
+                    """)
+                    query_insert = text("""
+                        INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION)
+                        VALUES (:id_cliente, :gestion, :comentario, GETDATE())
+                    """)
+                    with engine.begin() as conn:
+                        conn.execute(query_update, {
+                            "gestion": gestion,
+                            "comentario": comentario,
+                            "id_cliente": cliente_actual["ID_CLIENTE"],
+                        })
+                        conn.execute(query_insert, {
+                            "id_cliente": cliente_actual["ID_CLIENTE"],
+                            "gestion": gestion,
+                            "comentario": comentario,
+                        })
+                    st.success("Gestión guardada exitosamente.")
+                except Exception as e:
+                    st.error(f"Error al guardar los cambios: {e}")
                 
         # Página de Información de Cliente
     elif page == "ORIGINACION DE CREDITO":
