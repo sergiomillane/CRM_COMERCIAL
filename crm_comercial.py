@@ -441,7 +441,6 @@ else:
             st.write(f"**Nombre Solicitante:** {cliente_actual['Solicitante']}")
             st.write(f"**ID cliente:** {cliente_actual['ID_CLIENTE']}")
             st.write(f"**Folio:** {cliente_actual['Folio']}")
-            st.write(f"**Clasificación:** {cliente_actual['Clasificacion']}")
             st.write(f"**Limite de credito:** {cliente_actual['Limite_de_credito']}")
             st.write(f"**Fecha de aprobacion:** {cliente_actual['Fecha_Aprobacion']}")
             st.write(f"**Ultima Gestion:** {cliente_actual['FECHA_GESTION']}")
