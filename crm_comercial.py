@@ -313,8 +313,8 @@ else:
                         WHERE ID_CLIENTE = :id_cliente
                     """)
                     query_insert = text("""
-                        INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION)
-                        VALUES (:id_cliente, :gestion, :comentario, GETDATE())
+                        INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION, GESTOR)
+                        VALUES (:id_cliente, :gestion, :comentario, GETDATE(), :gestor)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_update, {
