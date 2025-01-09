@@ -326,6 +326,7 @@ else:
                             "id_cliente": cliente_actual["ID_CLIENTE"],
                             "gestion": gestion,
                             "comentario": comentario,
+                            "gestor": st.session_state["gestor"],
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
