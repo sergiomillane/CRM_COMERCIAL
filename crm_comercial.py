@@ -468,7 +468,7 @@ else:
 
             st.divider()
 
-            # Gestión del Cliente
+             # Gestión del Cliente
             st.subheader("Gestiones del Cliente")
             gestion_key = f"gestion_{cliente_actual['ID_CLIENTE']}"
             comentario_key = f"comentario_{cliente_actual['ID_CLIENTE']}"
@@ -493,8 +493,8 @@ else:
                         WHERE ID_CLIENTE = :id_cliente
                     """)
                     query_insert = text("""
-                        INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION)
-                        VALUES (:id_cliente, :gestion, :comentario, GETDATE())
+                        INSERT INTO Gestiones_CRM_Comercial (ID_CLIENTE,GESTION, COMENTARIO, FECHA_GESTION, GESTOR)
+                        VALUES (:id_cliente, :gestion, :comentario, GETDATE(), :gestor)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_update, {
@@ -506,6 +506,7 @@ else:
                             "id_cliente": cliente_actual["ID_CLIENTE"],
                             "gestion": gestion,
                             "comentario": comentario,
+                            "gestor": st.session_state["gestor"],
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
