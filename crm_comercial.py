@@ -147,7 +147,7 @@ else:
     # Sidebar para navegación y botón de cerrar sesión
     st.sidebar.title(f"Gestor: {gestor_autenticado}")
     st.sidebar.markdown("---")
-    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO"])
+    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO", "CAMPAÑA MOTOS", "CAMPAÑA LC"])
     st.sidebar.markdown("---")
     if st.sidebar.button("Cerrar Sesión"):
         cerrar_sesion()
