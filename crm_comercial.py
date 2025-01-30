@@ -96,7 +96,7 @@ usuarios = {
     "edgar_adolfo": {"gestor": "EDGAR QUIÑONEZ", "password": "eSLa6h", "admin": False},
     "marlene_lopez": {"gestor": "SILVIA LOPEZ", "password": "Marlene_vb$", "admin": False},
     "liliana_cortes": {"gestor": "Liliana Cortes", "password": "admin_vb3$", "admin": True},
-    "carlos_quinonez": {"gestor": "Carlos Quiñonez", "password": "admin_vb3$", "admin": True},
+    "carlos_quinonez": {"gestor": "Carlos Quiñonez", "password": "admin$", "admin": True},
     "roberto_boada": {"gestor": "Roberto Boada", "password": "admin_vb3$", "admin": True},
     "fernando_valdez": {"gestor": "Fernando Valdez", "password": "admin_vb3$", "admin": True},
     "juan_alberto": {"gestor": "Juan", "password": "admin_vb3$", "admin": True},
