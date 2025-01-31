@@ -609,14 +609,15 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     query_insert = text("""
-                        INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestion, :comentario)
+                        INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(),:gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_CLIENTE"]),  # Convertimos a int
                             "gestion": gestion,
-                            "comentario": comentario
+                            "comentario": comentario,
+                            "gestor":gestor
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
