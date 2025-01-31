@@ -608,6 +608,7 @@ else:
                 st.session_state[gestion_key] = gestion
                 st.session_state[comentario_key] = comentario
                 try:
+                    gestor = st.session_state.get("gestor") 
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
