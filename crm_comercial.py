@@ -614,13 +614,14 @@ else:
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
-                            "id_cliente": cliente_actual["ID_CLIENTE"],
+                            "id_cliente": int(cliente_actual["ID_CLIENTE"]),  # Convertimos a int
                             "gestion": gestion,
                             "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
 
     elif page == "CAMPAÑA LC":
         query_lc = "SELECT * FROM LC_COMERCIAL ORDER BY ID_CLIENTE ASC"
