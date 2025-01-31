@@ -616,8 +616,7 @@ else:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_CLIENTE"]),  # Convertimos a int
                             "gestion": gestion,
-                            "comentario": comentario,
-                            "gestor":gestor
+                            "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
