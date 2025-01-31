@@ -610,17 +610,19 @@ else:
                 try:
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(),:gestor, :gestion, :comentario)
+                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_CLIENTE"]),  # Convertimos a int
+                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
 
 
     elif page == "CAMPAÑA LC":
