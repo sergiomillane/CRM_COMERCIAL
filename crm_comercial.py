@@ -581,11 +581,21 @@ else:
                 st.write(f"**Nombre:** {cliente_actual['Nom_Cte']}")
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
-                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
-            with cols[1]:
-                st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
-                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
+                st.write(f"**Jerarquia:** {cliente_actual['Numero_Cliente']}")
+                
+            with cols[1]:
+                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
+                st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
+                st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
+                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
+                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+            st.markdown(
+                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['GESTION']) else 'No'}</span>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
+                
 
             st.divider()
 
