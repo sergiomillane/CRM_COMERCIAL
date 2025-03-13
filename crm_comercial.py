@@ -582,7 +582,7 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
-                st.write(f"**Jerarquia:** {cliente_actual['Numero_Cliente']}")
+                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
@@ -590,11 +590,11 @@ else:
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
                 st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
-                #st.markdown(
-              #      f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
-               #     unsafe_allow_html=True,
-                #)
-            #st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
                 
 
             st.divider()
