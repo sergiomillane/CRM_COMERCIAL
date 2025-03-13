@@ -590,7 +590,7 @@ else:
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
                 st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
-            st.markdown(
+                st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['GESTION']) else 'No'}</span>",
                     unsafe_allow_html=True,
                 )
@@ -627,7 +627,7 @@ else:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
                             "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
-                            "gestion": gestion,
+                            "gestion": st.session_state["gestor"],
                             "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
