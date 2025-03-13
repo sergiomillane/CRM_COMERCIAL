@@ -513,18 +513,18 @@ else:
                     st.error(f"Error al guardar los cambios: {e}")
                     
     elif page == "CAMPAÑA MOTOS":
-        query_motos = "SELECT * FROM MOTOS_COMERCIAL ORDER BY ID_CLIENTE ASC"
+        query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
         data_motos = pd.read_sql(query_motos, engine)
         
         # Agregar columna Jerarquía si no existe
-        if "Jerarquia" not in data_motos.columns:
-            data_motos.insert(0, "Jerarquia", range(1, len(data_motos) + 1))
+        if "NumeroCliente" not in data_motos.columns:
+            data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
 
         if data_motos.empty:
             st.warning("No hay datos en la campaña de motos.")
         else:
             filtered_data = data_motos
-            unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
+            unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
             total_clients = len(unique_clients)
 
             # Sección de búsqueda
@@ -539,7 +539,7 @@ else:
             if input_jerarquia:
                 try:
                     input_jerarquia = int(input_jerarquia)
-                    cliente_index = unique_clients[unique_clients["Jerarquia"] == input_jerarquia].index
+                    cliente_index = unique_clients[unique_clients["NumeroCliente"] == input_jerarquia].index
                     if len(cliente_index) > 0:
                         st.session_state["cliente_index_motos"] = cliente_index[0]
                     else:
@@ -549,7 +549,7 @@ else:
 
             # Búsqueda por ID Cliente
             if input_id_cliente:
-                cliente_index = unique_clients[unique_clients["ID_CLIENTE"] == input_id_cliente].index
+                cliente_index = unique_clients[unique_clients["ID_Cliente"] == input_id_cliente].index
                 if len(cliente_index) > 0:
                     st.session_state["cliente_index_motos"] = cliente_index[0]
                 else:
@@ -578,21 +578,21 @@ else:
             st.subheader("Información del Cliente - Campaña Motos")
             cols = st.columns(2)
             with cols[0]:
-                st.write(f"**Nombre:** {cliente_actual['NOMBRE']}")
-                st.write(f"**ID cliente:** {cliente_actual['ID_CLIENTE']}")
-                st.write(f"**Sucursal:** {cliente_actual['SUCURSAL']}")
-                st.write(f"**Modelo:** {cliente_actual['MODELO']}")
+                st.write(f"**Nombre:** {cliente_actual['Nom_Cte']}")
+                st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
+                st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
+                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
             with cols[1]:
-                st.write(f"**Costo Moto:** {cliente_actual['COSTO_MOTO']}")
-                st.write(f"**Enganche:** {cliente_actual['ENGANCHE']}")
-                st.write(f"**Teléfono:** {cliente_actual['TELEFONO']}")
+                st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
+                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+                st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
 
             st.divider()
 
             # Gestión del Cliente
             st.subheader("Gestiones del Cliente")
-            gestion_key = f"gestion_motos_{cliente_actual['ID_CLIENTE']}"
-            comentario_key = f"comentario_motos_{cliente_actual['ID_CLIENTE']}"
+            gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
+            comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
 
             with st.form(key=f"gestion_form_motos"):
                 gestion = st.selectbox(
@@ -615,7 +615,7 @@ else:
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_CLIENTE"]),  # Convertimos a int
+                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
                             "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
