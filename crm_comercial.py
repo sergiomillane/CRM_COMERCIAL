@@ -625,15 +625,15 @@ else:
                     query_update = text("""
                         UPDATE CRM_MOTOS_Final
                         SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
-                        WHERE ID_CLIENTE = :ID_Cliente
+                        WHERE ID_Cliente = :ID_Cliente
                     """)
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
+                        VALUES (:ID_Cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
+                            "ID_Cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
                             "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
