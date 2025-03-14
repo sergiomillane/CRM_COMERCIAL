@@ -622,6 +622,11 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     gestor = st.session_state.get("gestor") 
+                    query_update = text("""
+                        UPDATE CRM_MOTOS_Final
+                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                        WHERE ID_CLIENTE = :id_cliente
+                    """)
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
