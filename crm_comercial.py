@@ -632,6 +632,11 @@ else:
                         VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
+                        conn.execute(query_update, {
+                            "gestion": gestion,
+                            "comentario": comentario,
+                            "id_cliente": cliente_actual["ID_Cliente"],
+                        })
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
                             "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
