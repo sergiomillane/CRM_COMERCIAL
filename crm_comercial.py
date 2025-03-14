@@ -517,6 +517,7 @@ else:
     elif page == "CAMPAÑA MOTOS":
         query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
         data_motos = pd.read_sql(query_motos, engine)
+        data_motos = data_motos [data_motos ["GestorVirtual"]==gestor_autenticado]
         
         # Agregar columna Jerarquía si no existe
         if "NumeroCliente" not in data_motos.columns:
@@ -628,7 +629,7 @@ else:
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": st.session_state["GestorVirtual"],  # Asegúrate de pasar el nombre del gestor aquí
+                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
                         })
