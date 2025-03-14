@@ -628,7 +628,7 @@ else:
                     with engine.begin() as conn:
                         conn.execute(query_insert, {
                             "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
+                            "gestor": st.session_state["gestor"],  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
                         })
