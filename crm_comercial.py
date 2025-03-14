@@ -625,7 +625,7 @@ else:
                     query_update = text("""
                         UPDATE CRM_MOTOS_Final
                         SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
-                        WHERE ID_CLIENTE = :id_cliente
+                        WHERE ID_CLIENTE = :ID_Cliente
                     """)
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
