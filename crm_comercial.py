@@ -610,9 +610,9 @@ else:
             with st.form(key=f"gestion_form_motos"):
                 gestion = st.selectbox(
                     "Gestión",
-                    options=[None, "Interesado", "No Interesado", "Llamar Después"],
+                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No Interesado", "Llamar Después"].index(st.session_state[gestion_key]),
+                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
