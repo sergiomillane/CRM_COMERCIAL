@@ -518,6 +518,19 @@ else:
         query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
         data_motos = pd.read_sql(query_motos, engine)
         data_motos = data_motos [data_motos ["GestorVirtual"]==gestor_autenticado]
+
+        # Filtrar solo los clientes asignados al gestor autenticado
+        data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
+
+        filtered_data = data_motos
+        unique_clients = (
+        filtered_data
+        .drop_duplicates(subset=["ID_Cliente"])
+        .sort_values(by=["Gestion", "NumeroCliente"], ascending=[True, True], na_position="first")  # NULL primero
+        .reset_index(drop=True)
+        )
+
+        total_clients = len(unique_clients)
         
         # Agregar columna Jerarquía si no existe
         if "NumeroCliente" not in data_motos.columns:
