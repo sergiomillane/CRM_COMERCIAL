@@ -515,137 +515,150 @@ else:
                     st.error(f"Error al guardar los cambios: {e}")
                     
     elif page == "CAMPAÑA MOTOS":
-        query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
-        data_motos = pd.read_sql(query_motos, engine)
-        data_motos = data_motos [data_motos ["GestorVirtual"]==gestor_autenticado]
-        
-        # Agregar columna Jerarquía si no existe
-        if "NumeroCliente" not in data_motos.columns:
-            data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
+    # Cargar los datos desde SQL
+    query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
+    data_motos = pd.read_sql(query_motos, engine)
 
-        if data_motos.empty:
-            st.warning("No hay datos en la campaña de motos.")
-        else:
-            filtered_data = data_motos
-            unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
-            total_clients = len(unique_clients)
+    # Filtrar solo los clientes asignados al gestor autenticado
+    data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
 
-            # Sección de búsqueda
-            st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
-            cols = st.columns([1, 1])
-            with cols[0]:
-                input_jerarquia = st.text_input("Borre el numero antes de usar el botón de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
-            with cols[1]:
-                input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
+    # Priorizar los clientes con Gestion NULL arriba y ordenarlos por NumeroCliente
+    filtered_data = data_motos
+    unique_clients = (
+        filtered_data
+        .drop_duplicates(subset=["ID_Cliente"])
+        .sort_values(by=["Gestion", "NumeroCliente"], ascending=[True, True])  # NULL primero, luego por NumeroCliente
+        .reset_index(drop=True)
+    )
 
-            # Búsqueda por Jerarquía
-            if input_jerarquia:
-                try:
-                    input_jerarquia = int(input_jerarquia)
-                    cliente_index = unique_clients[unique_clients["NumeroCliente"] == input_jerarquia].index
-                    if len(cliente_index) > 0:
-                        st.session_state["cliente_index_motos"] = cliente_index[0]
-                    else:
-                        st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
-                except ValueError:
-                    st.error("Por favor, ingrese un número válido.")
+    total_clients = len(unique_clients)
 
-            # Búsqueda por ID Cliente
-            if input_id_cliente:
-                cliente_index = unique_clients[unique_clients["ID_Cliente"] == input_id_cliente].index
+    # Agregar columna Jerarquía si no existe
+    if "NumeroCliente" not in data_motos.columns:
+        data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
+
+    if data_motos.empty:
+        st.warning("No hay datos en la campaña de motos.")
+    else:
+        filtered_data = data_motos
+        unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
+        total_clients = len(unique_clients)
+
+        # Sección de búsqueda
+        st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
+        cols = st.columns([1, 1])
+        with cols[0]:
+            input_jerarquia = st.text_input("Borre el numero antes de usar el botón de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
+        with cols[1]:
+            input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
+
+        # Búsqueda por Jerarquía
+        if input_jerarquia:
+            try:
+                input_jerarquia = int(input_jerarquia)
+                cliente_index = unique_clients[unique_clients["NumeroCliente"] == input_jerarquia].index
                 if len(cliente_index) > 0:
                     st.session_state["cliente_index_motos"] = cliente_index[0]
                 else:
-                    st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
+                    st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
+            except ValueError:
+                st.error("Por favor, ingrese un número válido.")
 
-            # Validar el índice del cliente actual
-            if "cliente_index_motos" not in st.session_state:
-                st.session_state["cliente_index_motos"] = 0
-            cliente_index = st.session_state["cliente_index_motos"]
-            cliente_index = max(0, min(cliente_index, total_clients - 1))
-            st.session_state["cliente_index_motos"] = cliente_index
+        # Búsqueda por ID Cliente
+        if input_id_cliente:
+            cliente_index = unique_clients[unique_clients["ID_Cliente"] == input_id_cliente].index
+            if len(cliente_index) > 0:
+                st.session_state["cliente_index_motos"] = cliente_index[0]
+            else:
+                st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
 
-            # Botones de navegación
-            cols_navigation = st.columns([1, 1])
-            with cols_navigation[0]:
-                if st.button("Anterior"):
-                    st.session_state["cliente_index_motos"] = max(cliente_index - 1, 0)
-            with cols_navigation[1]:
-                if st.button("Siguiente"):
-                    st.session_state["cliente_index_motos"] = min(cliente_index + 1, total_clients - 1)
+        # Validar el índice del cliente actual
+        if "cliente_index_motos" not in st.session_state:
+            st.session_state["cliente_index_motos"] = 0
+        cliente_index = st.session_state["cliente_index_motos"]
+        cliente_index = max(0, min(cliente_index, total_clients - 1))
+        st.session_state["cliente_index_motos"] = cliente_index
 
-            # Obtener cliente actual
-            cliente_actual = unique_clients.iloc[st.session_state["cliente_index_motos"]]
+        # Botones de navegación
+        cols_navigation = st.columns([1, 1])
+        with cols_navigation[0]:
+            if st.button("Anterior"):
+                st.session_state["cliente_index_motos"] = max(cliente_index - 1, 0)
+        with cols_navigation[1]:
+            if st.button("Siguiente"):
+                st.session_state["cliente_index_motos"] = min(cliente_index + 1, total_clients - 1)
 
-            # Mostrar información del cliente actual
-            st.subheader("Información del Cliente - Campaña Motos")
-            cols = st.columns(2)
-            with cols[0]:
-                st.write(f"**Nombre:** {cliente_actual['Nom_Cte']}")
-                st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
-                st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
-                st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
-                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
-                
-            with cols[1]:
-                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
-                st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
-                st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
-                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
-                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
-                st.markdown(
-                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
-                    unsafe_allow_html=True,
-                )
-            st.markdown('</div>', unsafe_allow_html=True)
-                
+        # Obtener cliente actual
+        cliente_actual = unique_clients.iloc[st.session_state["cliente_index_motos"]]
 
-            st.divider()
+        # Mostrar información del cliente actual
+        st.subheader("Información del Cliente - Campaña Motos")
+        cols = st.columns(2)
+        with cols[0]:
+            st.write(f"**Nombre:** {cliente_actual['Nom_Cte']}")
+            st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
+            st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
+            st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
+            st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
+            
+        with cols[1]:
+            st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
+            st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
+            st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
+            st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
+            st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+            st.markdown(
+                f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
+                unsafe_allow_html=True,
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
 
-            # Gestión del Cliente
-            st.subheader("Gestiones del Cliente")
-            gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
-            comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
+        st.divider()
 
-            with st.form(key=f"gestion_form_motos"):
-                gestion = st.selectbox(
-                    "Gestión",
-                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
-                    index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
-                )
-                comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
-                submit_button = st.form_submit_button("Guardar Gestión")
+        # Gestión del Cliente
+        st.subheader("Gestiones del Cliente")
+        gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
+        comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
 
-            if submit_button:
-                st.session_state[gestion_key] = gestion
-                st.session_state[comentario_key] = comentario
-                try:
-                    gestor = st.session_state.get("gestor") 
-                    query_update = text("""
-                        UPDATE CRM_MOTOS_Final
-                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
-                        WHERE ID_Cliente = :id_cliente
-                    """)
-                    query_insert = text("""
-                        INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
-                    """)
-                    with engine.begin() as conn:
-                        conn.execute(query_update, {
-                            "gestion": gestion,
-                            "comentario": comentario,
-                            "id_cliente": cliente_actual["ID_Cliente"],
-                        })
-                        conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
-                            "gestion": gestion,
-                            "comentario": comentario
-                        })
-                    st.success("Gestión guardada exitosamente.")
-                except Exception as e:
-                    st.error(f"Error al guardar los cambios: {e}")
+        with st.form(key=f"gestion_form_motos"):
+            gestion = st.selectbox(
+                "Gestión",
+                options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
+                index=0 if st.session_state.get(gestion_key) is None else
+                      ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+            )
+            comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
+            submit_button = st.form_submit_button("Guardar Gestión")
+
+        if submit_button:
+            st.session_state[gestion_key] = gestion
+            st.session_state[comentario_key] = comentario
+            try:
+                gestor = st.session_state.get("gestor") 
+                query_update = text("""
+                    UPDATE CRM_MOTOS_Final
+                    SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                    WHERE ID_Cliente = :id_cliente
+                """)
+                query_insert = text("""
+                    INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                    VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
+                """)
+                with engine.begin() as conn:
+                    conn.execute(query_update, {
+                        "gestion": gestion,
+                        "comentario": comentario,
+                        "id_cliente": cliente_actual["ID_Cliente"],
+                    })
+                    conn.execute(query_insert, {
+                        "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
+                        "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
+                        "gestion": gestion,
+                        "comentario": comentario
+                    })
+                st.success("Gestión guardada exitosamente.")
+            except Exception as e:
+                st.error(f"Error al guardar los cambios: {e}")
 
 
 
