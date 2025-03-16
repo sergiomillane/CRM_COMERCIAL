@@ -522,22 +522,19 @@ else:
     # Filtrar solo los clientes asignados al gestor autenticado
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
 
-    # Asegurar que los NULL en Gestion sean tratados correctamente antes de ordenar
-        data_motos["Gestion"] = data_motos["Gestion"].astype(str).fillna("")
+    # Crear una columna auxiliar para dar prioridad a los NULL
+        data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
 
-    # Priorizar los clientes con Gestion NULL arriba y ordenarlos por NumeroCliente
+        # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
         unique_clients = (
             data_motos
             .drop_duplicates(subset=["ID_Cliente"])
-            .sort_values(
-                by=["Gestion", "NumeroCliente"], 
-                key=lambda col: col == "",  # Forzar los NULL al inicio
-                ascending=[True, True]  # NULL primero, luego orden por NumeroCliente
-            )
+            .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
             .reset_index(drop=True)
         )
 
         total_clients = len(unique_clients)
+
 
         
         # Agregar columna Jerarquía si no existe
