@@ -515,25 +515,33 @@ else:
                     st.error(f"Error al guardar los cambios: {e}")
                     
     elif page == "CAMPAÑA MOTOS":
-    # Cargar los datos desde SQL
-        query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
+    # Cargar los datos desde SQL (QUITAMOS EL ORDER BY, ya que vamos a ordenar en Pandas)
+        query_motos = "SELECT * FROM CRM_MOTOS_Final"
         data_motos = pd.read_sql(query_motos, engine)
 
-    # Filtrar solo los clientes asignados al gestor autenticado
+        # Filtrar solo los clientes asignados al gestor autenticado
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
 
-    # Crear una columna auxiliar para dar prioridad a los NULL
-        data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
+        # Verificar si el DataFrame está vacío antes de continuar
+        if data_motos.empty:
+            st.warning("No hay datos en la campaña de motos.")
+        else:
+            # Crear una columna auxiliar para dar prioridad a los NULL
+            data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
 
-        # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
-        unique_clients = (
-            data_motos
-            .drop_duplicates(subset=["ID_Cliente"])
-            .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
-            .reset_index(drop=True)
-        )
+            # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
+            unique_clients = (
+                data_motos
+                .drop_duplicates(subset=["ID_Cliente"])
+                .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
+                .reset_index(drop=True)
+            )
 
-        total_clients = len(unique_clients)
+            # Eliminar la columna auxiliar después de ordenar
+            unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
+
+            total_clients = len(unique_clients)
+
 
 
         
