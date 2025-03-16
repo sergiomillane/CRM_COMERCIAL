@@ -516,8 +516,8 @@ else:
                     
     elif page == "CAMPAÑA MOTOS":
     # Cargar los datos desde SQL
-    query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
-    data_motos = pd.read_sql(query_motos, engine)
+        query_motos = "SELECT * FROM CRM_MOTOS_Final ORDER BY NumeroCliente ASC"
+        data_motos = pd.read_sql(query_motos, engine)
 
     # Filtrar solo los clientes asignados al gestor autenticado
     data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
@@ -662,58 +662,63 @@ else:
 
 
 
-    elif page == "CAMPAÑA LC":
-        query_lc = "SELECT * FROM LC_COMERCIAL ORDER BY ID_CLIENTE ASC"
-        data_lc = pd.read_sql(query_lc, engine)
+        elif page == "CAMPAÑA LC":
+        # Cargar los datos desde SQL
+            query_lc = "SELECT * FROM LC_COMERCIAL ORDER BY ID_CLIENTE ASC"
+            data_lc = pd.read_sql(query_lc, engine)
 
-        if "Jerarquia" not in data_lc.columns:
-            data_lc.insert(0, "Jerarquia", range(1, len(data_lc) + 1))
+    # Agregar la columna Jerarquía si no existe
+    if "Jerarquia" not in data_lc.columns:
+        data_lc.insert(0, "Jerarquia", range(1, len(data_lc) + 1))
 
-        if data_lc.empty:
-            st.warning("No hay datos en la campaña de LC.")
-        else:
-            unique_clients = data_lc.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
-            total_clients = len(unique_clients)
+    if data_lc.empty:
+        st.warning("No hay datos en la campaña de LC.")
+    else:
+        unique_clients = data_lc.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
+        total_clients = len(unique_clients)
 
-            # Navegación
-            cliente_index = st.session_state.get("cliente_index_lc", 0)
-            cliente_index = max(0, min(cliente_index, total_clients - 1))
-            st.session_state["cliente_index_lc"] = cliente_index
+        # Navegación
+        cliente_index = st.session_state.get("cliente_index_lc", 0)
+        cliente_index = max(0, min(cliente_index, total_clients - 1))
+        st.session_state["cliente_index_lc"] = cliente_index
 
+        cols_navigation = st.columns([1, 1])
+        with cols_navigation[0]:
             if st.button("Anterior"):
                 st.session_state["cliente_index_lc"] = max(cliente_index - 1, 0)
+        with cols_navigation[1]:
             if st.button("Siguiente"):
                 st.session_state["cliente_index_lc"] = min(cliente_index + 1, total_clients - 1)
 
-            # Obtener cliente actual
-            cliente_actual = unique_clients.iloc[st.session_state["cliente_index_lc"]]
+        # Obtener cliente actual
+        cliente_actual = unique_clients.iloc[st.session_state["cliente_index_lc"]]
 
-            # Mostrar información del cliente
-            st.subheader("Información del Cliente - Campaña LC")
-            st.write(f"**Nombre:** {cliente_actual['NOMBRE']}")
-            st.write(f"**ID Cliente:** {cliente_actual['ID_CLIENTE']}")
-            st.write(f"**Límite de Crédito:** {cliente_actual['NUEVO_LC']}")
-            st.write(f"**Saldo Actual:** {cliente_actual['SALDO_ACTUAL']}")
-            st.write(f"**Teléfono:** {cliente_actual['TELEFONO']}")
+        # Mostrar información del cliente
+        st.subheader("Información del Cliente - Campaña LC")
+        st.write(f"**Nombre:** {cliente_actual['NOMBRE']}")
+        st.write(f"**ID Cliente:** {cliente_actual['ID_CLIENTE']}")
+        st.write(f"**Límite de Crédito:** {cliente_actual['NUEVO_LC']}")
+        st.write(f"**Saldo Actual:** {cliente_actual['SALDO_ACTUAL']}")
+        st.write(f"**Teléfono:** {cliente_actual['TELEFONO']}")
 
-            st.divider()
+        st.divider()
 
-            # Gestión del Cliente
-            gestion = st.selectbox("Gestión", ["Interesado", "No Interesado", "Llamar Después"], index=0)
-            comentario = st.text_area("Comentarios")
+        # Gestión del Cliente
+        gestion = st.selectbox("Gestión", ["Interesado", "No Interesado", "Llamar Después"], index=0)
+        comentario = st.text_area("Comentarios")
 
-            if st.button("Guardar Gestión"):
-                try:
-                    query_insert = text("""
-                        INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA LC', GETDATE(), :gestion, :comentario)
-                    """)
-                    with engine.begin() as conn:
-                        conn.execute(query_insert, {
-                            "id_cliente": cliente_actual["ID_CLIENTE"],
-                            "gestion": gestion,
-                            "comentario": comentario
-                        })
-                    st.success("Gestión guardada exitosamente.")
-                except Exception as e:
-                    st.error(f"Error al guardar los cambios: {e}")
+        if st.button("Guardar Gestión"):
+            try:
+                query_insert = text("""
+                    INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTION, COMENTARIO)
+                    VALUES (:id_cliente, 'CAMPAÑA LC', GETDATE(), :gestion, :comentario)
+                """)
+                with engine.begin() as conn:
+                    conn.execute(query_insert, {
+                        "id_cliente": cliente_actual["ID_CLIENTE"],
+                        "gestion": gestion,
+                        "comentario": comentario
+                    })
+                st.success("Gestión guardada exitosamente.")
+            except Exception as e:
+                st.error(f"Error al guardar los cambios: {e}")
