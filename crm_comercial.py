@@ -527,7 +527,7 @@ else:
     unique_clients = (
         filtered_data
         .drop_duplicates(subset=["ID_Cliente"])
-        .sort_values(by=["Gestion", "NumeroCliente"], ascending=[True, True])  # NULL primero, luego por NumeroCliente
+        .sort_values(by=["Gestion", "NumeroCliente"], ascending=[True, True], na_position="first")  # NULL primero
         .reset_index(drop=True)
     )
 
