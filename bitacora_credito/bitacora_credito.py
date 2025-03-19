@@ -1,19 +1,18 @@
 import streamlit as st
-import pyodbc
 import pandas as pd
 from datetime import datetime
+from sqlalchemy import create_engine, text
 
-# Configuración de la conexión a SQL Server
-SERVER = "52.167.231.145:51433"
-DATABASE = "CreditoyCobranza"
-USERNAME = "credito"
-PASSWORD = "Cr3d$.23xme"
+# Configurar la conexión a SQL Server usando pymssql
+DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
+
+# Crear el engine de SQLAlchemy
+engine = create_engine(DATABASE_URL)
 
 def get_connection():
+    """Obtiene la conexión a la base de datos."""
     try:
-        conn = pyodbc.connect(
-            f"DRIVER={{SQL Server}};SERVER={SERVER};DATABASE={DATABASE};UID={USERNAME};PWD={PASSWORD}"
-        )
+        conn = engine.connect()
         return conn
     except Exception as e:
         st.error(f"Error en la conexión con la base de datos: {e}")
@@ -63,22 +62,39 @@ if submit_button:
     conn = get_connection()
     if conn:
         try:
-            cursor = conn.cursor()
-            query = """
+            query = text("""
                 INSERT INTO Bitacora_Credito (
                     FECHA, TICKET, SUC, CLIENTE, VENTA, MOTO, 
                     TIPO_DE_CLIENTE, NOTAS, LC_ACTUAL, LC_FINAL, 
                     ENGANCHE_REQUERIDO, OBSERVACION, ESPECIAL, 
                     AUTORIZO, ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
                 ) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
-            cursor.execute(
-                query,
-                fecha.strftime('%Y-%m-%d'), ticket, sucursal, cliente, venta, moto,
-                tipo_cliente, notas, lc_actual, lc_final, enganche_requerido,
-                observacion, especial, autorizo, articulo, ejecutivo, cel_cte, consulta_buro
-            )
+                VALUES (:fecha, :ticket, :sucursal, :cliente, :venta, :moto, 
+                        :tipo_cliente, :notas, :lc_actual, :lc_final, 
+                        :enganche_requerido, :observacion, :especial, 
+                        :autorizo, :articulo, :ejecutivo, :cel_cte, :consulta_buro)
+            """)
+
+            conn.execute(query, {
+                "fecha": fecha.strftime('%Y-%m-%d'),
+                "ticket": ticket,
+                "sucursal": sucursal,
+                "cliente": cliente,
+                "venta": venta,
+                "moto": moto,
+                "tipo_cliente": tipo_cliente,
+                "notas": notas,
+                "lc_actual": lc_actual,
+                "lc_final": lc_final,
+                "enganche_requerido": enganche_requerido,
+                "observacion": observacion,
+                "especial": especial,
+                "autorizo": autorizo,
+                "articulo": articulo,
+                "ejecutivo": ejecutivo,
+                "cel_cte": cel_cte,
+                "consulta_buro": consulta_buro
+            })
             conn.commit()
             st.success("Registro guardado exitosamente en la base de datos.")
         except Exception as e:
@@ -101,12 +117,12 @@ def fetch_records():
     conn = get_connection()
     if conn:
         try:
-            query = "SELECT * FROM Bitacora_Credito WHERE FECHA = ?"
-            params = [filtro_fecha.strftime('%Y-%m-%d')]
+            query = text("SELECT * FROM Bitacora_Credito WHERE FECHA = :fecha")
+            params = {"fecha": filtro_fecha.strftime('%Y-%m-%d')}
 
             if filtro_ejecutivo != "Todos":
-                query += " AND EJECUTIVO = ?"
-                params.append(filtro_ejecutivo)
+                query = text("SELECT * FROM Bitacora_Credito WHERE FECHA = :fecha AND EJECUTIVO = :ejecutivo")
+                params["ejecutivo"] = filtro_ejecutivo
 
             df = pd.read_sql(query, conn, params=params)
             conn.close()
