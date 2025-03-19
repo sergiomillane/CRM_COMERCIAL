@@ -140,5 +140,3 @@ if not df_records.empty:
 else:
     st.warning("No hay registros para mostrar con los filtros seleccionados.")
 
-# Actualizar automáticamente cada 10 segundos
-st.rerun()
