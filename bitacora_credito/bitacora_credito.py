@@ -41,12 +41,12 @@ with st.form("registro_form", clear_on_submit=True):
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
         ticket = st.text_area("Ticket")
+        moto = st.selectbox("Moto", ["SI", "NO"])
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
-        cliente = st.text_area("ID_Cliente", help="Presiona `Ctrl + Enter` para enviar")
-
+        
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
-        moto = st.selectbox("Moto", ["SI", "NO"])
+        cliente = st.text_area("ID_Cliente", help="Presiona `Ctrl + Enter` para enviar")
         tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
         notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
 
