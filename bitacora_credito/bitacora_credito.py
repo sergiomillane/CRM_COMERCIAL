@@ -70,7 +70,7 @@ with st.form("registro_form", clear_on_submit=True):
 
    
 # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
-submit_button = st.form_submit_button("Guardar Registro")
+    submit_button = st.form_submit_button("Guardar Registro")
 
 # ========== GUARDAR REGISTRO ==========
 if submit_button:
