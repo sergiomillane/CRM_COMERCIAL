@@ -175,6 +175,37 @@ if pagina == "Bitácora de Actividades":
     else:
         st.warning("No hay registros para mostrar con los filtros seleccionados.")
 
+ # ========== ✏️ EDITAR UN REGISTRO ==========
+    st.subheader("✏️ Editar un registro")
+
+    if not df_records.empty:
+        registros_disponibles = df_records["#Registro"].tolist()
+        registro_seleccionado = st.selectbox("Seleccione el número de registro a editar:", registros_disponibles)
+
+        # Lista de columnas editables
+        columnas_editables = ["TICKET", "CLIENTE", "VENTA", "MOTO", "LC_ACTUAL", "LC_FINAL", "ENGANCHE_REQUERIDO", 
+                              "ENGANCHE_RECIBIDO", "OBSERVACION", "ESPECIAL", "ARTICULO", "EJECUTIVO", "CEL_CTE", 
+                              "CONSULTA_BURO", "Actualizacion", "FACTURO"]
+
+        campo_seleccionado = st.selectbox("Seleccione el campo a editar:", columnas_editables)
+        nuevo_valor = st.text_input(f"Ingrese el nuevo valor para {campo_seleccionado}:")
+
+        if st.button("Actualizar Registro"):
+            conn = get_connection()
+            if conn:
+                try:
+                    update_query = text(f"UPDATE Bitacora_Credito SET {campo_seleccionado} = :nuevo_valor WHERE Registro = :registro")
+                    conn.execute(update_query, {"nuevo_valor": nuevo_valor, "registro": registro_seleccionado})
+                    conn.commit()
+                    st.success(f"Registro #{registro_seleccionado} actualizado exitosamente.")
+                except Exception as e:
+                    st.error(f"Error al actualizar el registro: {e}")
+                finally:
+                    conn.close()
+                st.rerun()  # Recargar la página para reflejar los cambios
+
+
+
     # ========== ELIMINACIÓN DE REGISTROS ==========
     st.subheader("❌ Eliminar un registro")
 
