@@ -52,14 +52,25 @@ with st.form("registro_form", clear_on_submit=True):
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
 
-    articulo = st.text_input("Artículo")
-    observacion = st.text_area("Observación")
-    ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
-    cel_cte = st.text_input("Celular Cliente")
-    consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
+# Crear una nueva fila para Artículo, Ejecutivo y Celular Cliente
+col4, col5, col6 = st.columns(3)
 
-    # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
-    submit_button = st.form_submit_button("Guardar Registro")
+with col4:
+    articulo = st.text_input("Artículo")
+
+with col5:
+    ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
+
+with col6:
+    cel_cte = st.text_input("Celular Cliente")
+
+# Fila aparte para Observación y Consulta Buró
+observacion = st.text_area("Observación")
+consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
+
+   
+# ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
+submit_button = st.form_submit_button("Guardar Registro")
 
 # ========== GUARDAR REGISTRO ==========
 if submit_button:
