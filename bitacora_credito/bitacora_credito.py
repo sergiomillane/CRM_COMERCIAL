@@ -41,20 +41,21 @@ with st.form("registro_form", clear_on_submit=True):
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
         ticket = st.text_area("Ticket")
-        moto = st.selectbox("Moto", ["SI", "NO"])
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
+        tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
         
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
         cliente = st.text_area("ID_Cliente", help="Presiona `Ctrl + Enter` para enviar")
-        tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
+        enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
         notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
 
     with col3:
-        lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
+        moto = st.selectbox("Moto", ["SI", "NO"])
         observacion = st.text_area("Observación", help="Presiona `Ctrl + Enter` para enviar")
+        lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
-        enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
+        
         
 
     especial = st.selectbox("Especial", ["Ninguno",
