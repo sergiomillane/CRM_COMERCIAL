@@ -51,7 +51,7 @@ with st.form("registro_form", clear_on_submit=True):
         notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
 
     with col3:
-        lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
+        lc_actual = st.slider("LC Actual", min_value=0.0, max_value=100000.0, step=0.01, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
         enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
         observacion = st.text_area("Observación", help="Presiona `Ctrl + Enter` para enviar")
