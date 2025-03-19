@@ -3,8 +3,6 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
-
-
 # Configurar la conexión a SQL Server usando pymssql
 DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
 
@@ -32,16 +30,15 @@ with st.form("registro_form", clear_on_submit=True):
 
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
-        ticket = st.text_input("Ticket")  # ✅ Altura reducida
+        ticket = st.text_input("Ticket")
         moto = st.selectbox("Moto", ["SI", "NO"])
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
         
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
-        cliente = st.text_input("ID_Cliente")  # ✅ Evita el envío automático con ENTER
+        cliente = st.text_input("ID_Cliente")
         lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
-        
 
     with col3:
         tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
@@ -55,8 +52,6 @@ with st.form("registro_form", clear_on_submit=True):
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
 
-    
-    
     articulo = st.text_input("Artículo")
     observacion = st.text_area("Observación")
     ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
@@ -65,26 +60,6 @@ with st.form("registro_form", clear_on_submit=True):
 
     # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
     submit_button = st.form_submit_button("Guardar Registro")
-
-
-# ========== CONTROL DE ENVÍO ==========
-if submit_button:
-    # ✅ Verificar que el usuario haya usado Ctrl + Enter
-    st.session_state["submit_key_pressed"] = st.session_state.get("submit_key_pressed", False)
-
-    if not st.session_state["submit_key_pressed"]:
-        st.warning("Para enviar el formulario haz clic en el botón.")
-    else:
-        # ✅ Guardar en base de datos (simulado aquí)
-        st.success("Registro guardado exitosamente en la base de datos.")
-        st.session_state["submit_key_pressed"] = False  # Reset
-
-# ========== CONTROL DE TECLAS ==========
-def set_submit_key():
-    st.session_state["submit_key_pressed"] = True
-
-
-
 
 # ========== GUARDAR REGISTRO ==========
 if submit_button:
@@ -95,13 +70,13 @@ if submit_button:
                 INSERT INTO Bitacora_Credito (
                     FECHA, TICKET, SUC, CLIENTE, VENTA, MOTO, 
                     TIPO_DE_CLIENTE, NOTAS, LC_ACTUAL, LC_FINAL, 
-                    ENGANCHE_REQUERIDO,ENGANCHE_RECIBIDO, OBSERVACION, ESPECIAL,
-                     ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
+                    ENGANCHE_REQUERIDO, ENGANCHE_RECIBIDO, OBSERVACION, ESPECIAL,
+                    ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
                 ) 
                 VALUES (:fecha, :ticket, :sucursal, :cliente, :venta, :moto, 
                         :tipo_cliente, :notas, :lc_actual, :lc_final, 
-                        :enganche_requerido,:enganche_recibido, :observacion, :especial,
-                          :articulo, :ejecutivo, :cel_cte, :consulta_buro)
+                        :enganche_requerido, :enganche_recibido, :observacion, :especial,
+                        :articulo, :ejecutivo, :cel_cte, :consulta_buro)
             """)
 
             conn.execute(query, {
@@ -116,7 +91,7 @@ if submit_button:
                 "lc_actual": lc_actual,
                 "lc_final": lc_final,
                 "enganche_requerido": enganche_requerido,
-                "enganche_recibido":enganche_recibido,
+                "enganche_recibido": enganche_recibido,
                 "observacion": observacion,
                 "especial": especial,
                 "articulo": articulo,
@@ -135,7 +110,7 @@ if submit_button:
 st.header("📊 Registros en tiempo real")
 
 # Filtros
-col1, col2,col3 = st.columns(3)
+col1, col2, col3 = st.columns(3)
 with col1:
     filtro_cliente = st.text_input("Filtrar por ID Cliente", "")
 with col2:
@@ -148,11 +123,11 @@ def fetch_records():
     conn = get_connection()
     if conn:
         try:
-            query = text("SELECT * FROM Bitacora_Credito WHERE FECHA = :fecha")
+            query = text("SELECT Registro AS '#Registro', * FROM Bitacora_Credito WHERE FECHA = :fecha ORDER BY Registro ASC")
             params = {"fecha": filtro_fecha.strftime('%Y-%m-%d')}
 
             if filtro_ejecutivo != "Todos":
-                query = text("SELECT * FROM Bitacora_Credito WHERE FECHA = :fecha AND EJECUTIVO = :ejecutivo")
+                query = text("SELECT Registro AS '#Registro', * FROM Bitacora_Credito WHERE FECHA = :fecha AND EJECUTIVO = :ejecutivo ORDER BY Registro ASC")
                 params["ejecutivo"] = filtro_ejecutivo
 
             df = pd.read_sql(query, conn, params=params)
@@ -170,4 +145,3 @@ if not df_records.empty:
     st.dataframe(df_records)
 else:
     st.warning("No hay registros para mostrar con los filtros seleccionados.")
-
