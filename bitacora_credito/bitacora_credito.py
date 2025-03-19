@@ -76,7 +76,10 @@ if pagina == "Bitácora de Actividades":
 
         # Fila aparte para Observación y Consulta Buró
         observacion = st.text_area("Observación")
+
+        col8, col9 = st.columns(2)
         consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
+        facturo = st.selectbox("Facturó", ["SI", "NO"])
 
     
     # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
@@ -92,12 +95,12 @@ if pagina == "Bitácora de Actividades":
                         FECHA, TICKET, SUC, CLIENTE, VENTA, MOTO, 
                         TIPO_DE_CLIENTE, NOTAS, LC_ACTUAL, LC_FINAL, 
                         ENGANCHE_REQUERIDO, ENGANCHE_RECIBIDO, OBSERVACION, ESPECIAL,
-                        ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO, Actualizacion
+                        ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO, Actualizacion, FACTURO
                     ) 
                     VALUES (:fecha, :ticket, :sucursal, :cliente, :venta, :moto, 
                             :tipo_cliente, :notas, :lc_actual, :lc_final, 
                             :enganche_requerido, :enganche_recibido, :observacion, :especial,
-                            :articulo, :ejecutivo, :cel_cte, :consulta_buro, :actualizacion)
+                            :articulo, :ejecutivo, :cel_cte, :consulta_buro, :actualizacion, :facturo)
                 """)
 
                 conn.execute(query, {
@@ -119,7 +122,8 @@ if pagina == "Bitácora de Actividades":
                     "ejecutivo": ejecutivo,
                     "cel_cte": cel_cte,
                     "consulta_buro": consulta_buro,
-                    "actualizacion":actualizacion
+                    "actualizacion":actualizacion,
+                    "facturo": facturo 
                 })
                 conn.commit()
                 st.success("Registro guardado exitosamente en la base de datos.")
