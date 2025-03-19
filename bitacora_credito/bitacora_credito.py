@@ -82,7 +82,7 @@ if pagina == "Bitácora de Actividades":
             consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
         
         with col9:
-            facturo = st.selectbox("Facturó", ["SI", "NO"])
+            facturo = st.selectbox("Facturó", ["SIN DEFINIR","SI", "NO"])
 
     
     # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
