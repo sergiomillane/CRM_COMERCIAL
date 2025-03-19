@@ -3,6 +3,27 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
+st.markdown(
+    """
+    <style>
+        /* Cambiar el fondo a azul */
+        body {
+            background-color: #007BFF !important;  /* Azul */
+        }
+
+        /* Cambiar el fondo de los contenedores de Streamlit */
+        .stApp {
+            background-color: #007BFF !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+
+
 # Configurar la conexión a SQL Server usando pymssql
 DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
 
