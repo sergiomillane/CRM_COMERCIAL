@@ -25,7 +25,7 @@ st.markdown(
     """
     <script>
         document.addEventListener("keydown", function(event) {
-            if (event.key === "Enter" && event.target.tagName === "INPUT") {
+            if (event.key === "Enter" && (event.target.nodeName === "INPUT" || event.target.nodeName === "TEXTAREA")) {
                 event.preventDefault();
             }
         });
@@ -76,7 +76,7 @@ if submit_button:
     st.session_state["submit_key_pressed"] = st.session_state.get("submit_key_pressed", False)
 
     if not st.session_state["submit_key_pressed"]:
-        st.warning("Para enviar el formulario, usa `Ctrl + Enter` o haz clic en el botón.")
+        st.warning("Para enviar el formulario haz clic en el botón.")
     else:
         # ✅ Guardar en base de datos (simulado aquí)
         st.success("Registro guardado exitosamente en la base de datos.")
