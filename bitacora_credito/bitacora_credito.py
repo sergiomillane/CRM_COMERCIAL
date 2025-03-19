@@ -76,7 +76,7 @@ if submit_button:
 def set_submit_key():
     st.session_state["submit_key_pressed"] = True
 
-st.text_area("Presiona `Ctrl + Enter` aquí para activar el envío:", key="key_listener", on_change=set_submit_key)
+
 
 
 # ========== GUARDAR REGISTRO ==========
