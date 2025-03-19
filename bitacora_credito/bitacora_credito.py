@@ -3,22 +3,7 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
-st.markdown(
-    """
-    <style>
-        /* Cambiar el fondo a azul */
-        body {
-            background-color: #ff813d !important;  /* Azul */
-        }
 
-        /* Cambiar el fondo de los contenedores de Streamlit */
-        .stApp {
-            background-color: #ff813d !important;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
 
 
 
