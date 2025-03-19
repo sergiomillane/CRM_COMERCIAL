@@ -40,7 +40,7 @@ with st.form("registro_form", clear_on_submit=True):
 
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
-        ticket = st.text_area("Ticket",height=30)  # ✅ Altura reducida
+        ticket = st.text_area("Ticket")  # ✅ Altura reducida
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
         tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
         
