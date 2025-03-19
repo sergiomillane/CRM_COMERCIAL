@@ -61,8 +61,7 @@ with st.form("registro_form", clear_on_submit=True):
         "Aut. Pedro Moreno", "Aut. Luis Corrales", "Aut. Christian Ayala", "Aut. Edmar Cruz",
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
-    autorizo = st.selectbox("Lider de sucursal", list(range(1, 101)))
-    articulo = st.text_input("Artículo")
+    articulo = st.text_area("Artículo",height=30)
     ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
     cel_cte = st.text_input("Celular Cliente")
     consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
