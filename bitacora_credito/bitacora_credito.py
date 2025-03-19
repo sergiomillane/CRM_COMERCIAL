@@ -116,7 +116,7 @@ if submit_button:
                 "lc_actual": lc_actual,
                 "lc_final": lc_final,
                 "enganche_requerido": enganche_requerido,
-                "engache_recibido":enganche_recibido,
+                "enganche_recibido":enganche_recibido,
                 "observacion": observacion,
                 "especial": especial,
                 "articulo": articulo,
