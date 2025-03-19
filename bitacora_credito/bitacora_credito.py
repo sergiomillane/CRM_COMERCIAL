@@ -66,7 +66,7 @@ with st.form("registro_form", clear_on_submit=True):
         """
         <style>
             textarea {
-                height: 30px !important;
+                height: 20px !important;
             }
         </style>
         """,
