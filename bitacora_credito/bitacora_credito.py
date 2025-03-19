@@ -166,3 +166,5 @@ if not df_records.empty:
                 st.error(f"Error al eliminar el registro: {e}")
             finally:
                 conn.close()
+ # Recargar la página para actualizar los datos
+        st.experimental_rerun()
