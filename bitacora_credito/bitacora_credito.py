@@ -5,10 +5,6 @@ from sqlalchemy import create_engine, text
 
 
 
-
-
-
-
 # Configurar la conexión a SQL Server usando pymssql
 DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
 
@@ -37,30 +33,32 @@ with st.form("registro_form", clear_on_submit=True):
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
         ticket = st.text_input("Ticket")  # ✅ Altura reducida
+        moto = st.selectbox("Moto", ["SI", "NO"])
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
-        tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
         
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
         cliente = st.text_input("ID_Cliente")  # ✅ Evita el envío automático con ENTER
-        notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
-        enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
-
-    with col3:
-        moto = st.selectbox("Moto", ["SI", "NO"])
-        observacion = st.text_input("Observación")  # ✅ Mantiene altura baja para parecer un input
         lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
+        
+
+    with col3:
+        tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
+        notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
+        enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
+        enganche_recibido = st.number_input("Enganche Recibido", min_value=0.0, format="%.2f")
 
     especial = st.selectbox("Especial", ["Ninguno",
         "Aut. Fernando Valdez", "Aut. Francisco Valdez", "Aut. Gabriel Valdez", "Aut. Enrique Valdez",
-        "Aut. Pedro Moreno", "Aut. Luis Corrales", "Aut. Christian Ayala", "Aut. Edmar Cruz",
+        "Aut. Pedro Moreno", "Aut. Edmar Cruz",
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
 
     
-
+    
     articulo = st.text_input("Artículo")
+    observacion = st.text_area("Observación")
     ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
     cel_cte = st.text_input("Celular Cliente")
     consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
@@ -97,13 +95,13 @@ if submit_button:
                 INSERT INTO Bitacora_Credito (
                     FECHA, TICKET, SUC, CLIENTE, VENTA, MOTO, 
                     TIPO_DE_CLIENTE, NOTAS, LC_ACTUAL, LC_FINAL, 
-                    ENGANCHE_REQUERIDO, OBSERVACION, ESPECIAL, 
-                    AUTORIZO, ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
+                    ENGANCHE_REQUERIDO,ENGANCHE_RECIBIDO, OBSERVACION, ESPECIAL,
+                     ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
                 ) 
                 VALUES (:fecha, :ticket, :sucursal, :cliente, :venta, :moto, 
                         :tipo_cliente, :notas, :lc_actual, :lc_final, 
-                        :enganche_requerido, :observacion, :especial, 
-                        :autorizo, :articulo, :ejecutivo, :cel_cte, :consulta_buro)
+                        :enganche_requerido,:enganche_recibido, :observacion, :especial,
+                          :articulo, :ejecutivo, :cel_cte, :consulta_buro)
             """)
 
             conn.execute(query, {
@@ -118,9 +116,9 @@ if submit_button:
                 "lc_actual": lc_actual,
                 "lc_final": lc_final,
                 "enganche_requerido": enganche_requerido,
+                "engache_recibido":enganche_recibido,
                 "observacion": observacion,
                 "especial": especial,
-                "autorizo": autorizo,
                 "articulo": articulo,
                 "ejecutivo": ejecutivo,
                 "cel_cte": cel_cte,
