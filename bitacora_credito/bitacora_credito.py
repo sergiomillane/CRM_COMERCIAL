@@ -78,8 +78,11 @@ if pagina == "Bitácora de Actividades":
         observacion = st.text_area("Observación")
 
         col8, col9 = st.columns(2)
-        consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
-        facturo = st.selectbox("Facturó", ["SI", "NO"])
+        with col8:
+            consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
+        
+        with col9:
+            facturo = st.selectbox("Facturó", ["SI", "NO"])
 
     
     # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
