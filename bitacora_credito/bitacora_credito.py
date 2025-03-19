@@ -21,15 +21,18 @@ def get_connection():
 # ========== INTERFAZ STREAMLIT ==========
 st.title("Departamento de crédito - Bitácora de actividades")
 
+# ✅ Incluir mensaje para instruir a los usuarios
+st.markdown("### Para enviar el formulario usa `Ctrl + Enter` o haz clic en el botón 'Guardar Registro'.")
+
 # ========== FORMULARIO ==========
-with st.form("registro_form", clear_on_submit=False):  
+with st.form("registro_form", clear_on_submit=True):
     col1, col2, col3 = st.columns(3)
 
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
         ticket = st.text_input("Ticket")
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
-        cliente = st.text_input("ID_Cliente")
+        cliente = st.text_input("ID_Cliente", help="Presiona `Ctrl + Enter` para enviar")
 
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
@@ -41,7 +44,7 @@ with st.form("registro_form", clear_on_submit=False):
         lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
         enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
-        observacion = st.text_area("Observación")
+        observacion = st.text_area("Observación", help="Presiona `Ctrl + Enter` para enviar")
 
     especial = st.selectbox("Especial", ["Ninguno",
         "Aut. Fernando Valdez", "Aut. Francisco Valdez", "Aut. Gabriel Valdez", "Aut. Enrique Valdez",
@@ -50,12 +53,31 @@ with st.form("registro_form", clear_on_submit=False):
     ])
     autorizo = st.selectbox("Lider de sucursal", list(range(1, 101)))
     articulo = st.text_input("Artículo")
-    ejecutivo = st.selectbox("Ejecutivo", ["Francis","Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
+    ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
     cel_cte = st.text_input("Celular Cliente")
     consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
 
-    # Botón para enviar el formulario
+    # ✅ Botón de envío
     submit_button = st.form_submit_button("Guardar Registro")
+
+# ========== CONTROL DE ENVÍO ==========
+if submit_button:
+    # ✅ Verificar que el usuario haya usado Ctrl + Enter
+    st.session_state["submit_key_pressed"] = st.session_state.get("submit_key_pressed", False)
+
+    if not st.session_state["submit_key_pressed"]:
+        st.warning("Para enviar el formulario, usa `Ctrl + Enter` o haz clic en el botón.")
+    else:
+        # ✅ Guardar en base de datos (simulado aquí)
+        st.success("Registro guardado exitosamente en la base de datos.")
+        st.session_state["submit_key_pressed"] = False  # Reset
+
+# ========== CONTROL DE TECLAS ==========
+def set_submit_key():
+    st.session_state["submit_key_pressed"] = True
+
+st.text_area("Presiona `Ctrl + Enter` aquí para activar el envío:", key="key_listener", on_change=set_submit_key)
+
 
 # ========== GUARDAR REGISTRO ==========
 if submit_button:
