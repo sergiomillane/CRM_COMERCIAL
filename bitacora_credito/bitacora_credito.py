@@ -22,7 +22,7 @@ def get_connection():
 st.title("Departamento de crédito - Bitácora de actividades")
 
 # ========== FORMULARIO ==========
-with st.form("registro_form"):
+with st.form("registro_form", clear_on_submit=False):  
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -43,14 +43,14 @@ with st.form("registro_form"):
         enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
         observacion = st.text_area("Observación")
 
-    especial = st.selectbox("Especial", [
+    especial = st.selectbox("Especial", ["Ninguno",
         "Aut. Fernando Valdez", "Aut. Francisco Valdez", "Aut. Gabriel Valdez", "Aut. Enrique Valdez",
         "Aut. Pedro Moreno", "Aut. Luis Corrales", "Aut. Christian Ayala", "Aut. Edmar Cruz",
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
     autorizo = st.selectbox("Lider de sucursal", list(range(1, 101)))
     articulo = st.text_input("Artículo")
-    ejecutivo = st.selectbox("Ejecutivo", ["Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
+    ejecutivo = st.selectbox("Ejecutivo", ["Francis","Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
     cel_cte = st.text_input("Celular Cliente")
     consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
 
