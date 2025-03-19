@@ -61,6 +61,18 @@ with st.form("registro_form", clear_on_submit=True):
         "Aut. Pedro Moreno", "Aut. Luis Corrales", "Aut. Christian Ayala", "Aut. Edmar Cruz",
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
+
+    st.markdown(
+        """
+        <style>
+            textarea {
+                height: 30px !important;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     articulo = st.text_area("Artículo")
     ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
     cel_cte = st.text_input("Celular Cliente")
