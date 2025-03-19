@@ -40,19 +40,19 @@ with st.form("registro_form", clear_on_submit=True):
 
     with col1:
         fecha = st.date_input("Fecha", datetime.today())
-        ticket = st.text_area("Ticket", height=30)  # ✅ Altura reducida
+        ticket = st.text_area("Ticket")  # ✅ Altura reducida
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
         tipo_cliente = st.selectbox("Tipo de Cliente", ["RECOMPRA ACTIVO", "NUEVO", "RECOMPRA INACTIVO", "CAMPAÑA"])
         
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
-        cliente = st.text_area("ID_Cliente", height=30)  # ✅ Evita el envío automático con ENTER
+        cliente = st.text_area("ID_Cliente")  # ✅ Evita el envío automático con ENTER
         notas = st.selectbox("Notas", ["CON ENGANCHE", "SIN ENGANCHE", "OTRO"])
         enganche_requerido = st.number_input("Enganche Requerido", min_value=0.0, format="%.2f")
 
     with col3:
         moto = st.selectbox("Moto", ["SI", "NO"])
-        observacion = st.text_area("Observación", height=30)  # ✅ Mantiene altura baja para parecer un input
+        observacion = st.text_area("Observación")  # ✅ Mantiene altura baja para parecer un input
         lc_actual = st.number_input("LC Actual", min_value=0.0, format="%.2f")
         lc_final = st.number_input("LC Final", min_value=0.0, format="%.2f")
 
