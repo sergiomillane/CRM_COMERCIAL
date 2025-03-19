@@ -167,4 +167,4 @@ if not df_records.empty:
             finally:
                 conn.close()
  # Recargar la página para actualizar los datos
-        st.experimental_rerun()
+        st.rerun()
