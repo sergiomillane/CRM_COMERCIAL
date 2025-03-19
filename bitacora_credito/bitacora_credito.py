@@ -53,7 +53,7 @@ with st.form("registro_form", clear_on_submit=True):
     ])
 
     # Crear una nueva fila para Artículo, Ejecutivo y Celular Cliente
-    col4, col5, col6 = st.columns(3)
+    col4, col5, col6, col7 = st.columns(4)
 
     with col4:
         articulo = st.text_input("Artículo")
@@ -63,6 +63,9 @@ with st.form("registro_form", clear_on_submit=True):
 
     with col6:
         cel_cte = st.text_input("Celular Cliente")
+    
+    with col7:
+        actualizacion = st.selectbox("Actualización cliente",["SI","NO"])
 
     # Fila aparte para Observación y Consulta Buró
     observacion = st.text_area("Observación")
@@ -82,12 +85,12 @@ if submit_button:
                     FECHA, TICKET, SUC, CLIENTE, VENTA, MOTO, 
                     TIPO_DE_CLIENTE, NOTAS, LC_ACTUAL, LC_FINAL, 
                     ENGANCHE_REQUERIDO, ENGANCHE_RECIBIDO, OBSERVACION, ESPECIAL,
-                    ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO
+                    ARTICULO, EJECUTIVO, CEL_CTE, CONSULTA_BURO, Actualizacion
                 ) 
                 VALUES (:fecha, :ticket, :sucursal, :cliente, :venta, :moto, 
                         :tipo_cliente, :notas, :lc_actual, :lc_final, 
                         :enganche_requerido, :enganche_recibido, :observacion, :especial,
-                        :articulo, :ejecutivo, :cel_cte, :consulta_buro)
+                        :articulo, :ejecutivo, :cel_cte, :consulta_buro, :actualizacion)
             """)
 
             conn.execute(query, {
@@ -108,7 +111,8 @@ if submit_button:
                 "articulo": articulo,
                 "ejecutivo": ejecutivo,
                 "cel_cte": cel_cte,
-                "consulta_buro": consulta_buro
+                "consulta_buro": consulta_buro,
+                "actualizacion":actualizacion
             })
             conn.commit()
             st.success("Registro guardado exitosamente en la base de datos.")
