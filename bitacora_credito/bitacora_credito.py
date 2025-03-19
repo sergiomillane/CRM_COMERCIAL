@@ -21,18 +21,8 @@ def get_connection():
 # ========== INTERFAZ STREAMLIT ==========
 st.title("Departamento de crédito - Bitácora de actividades")
 
-st.markdown(
-    """
-    <script>
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "Enter" && (event.target.nodeName === "INPUT" || event.target.nodeName === "TEXTAREA")) {
-                event.preventDefault();
-            }
-        });
-    </script>
-    """,
-    unsafe_allow_html=True
-)
+st.markdown("### ⚠️ **NO DAR ENTER O SE GUARDARÁ EL REGISTRO** ⚠️")
+st.markdown("Por favor, utilice el botón **'Guardar Registro'** para enviar el formulario.")
 
 # ========== FORMULARIO ==========
 with st.form("registro_form", clear_on_submit=True):  
