@@ -29,7 +29,7 @@ with st.form("registro_form"):
         fecha = st.date_input("Fecha", datetime.today())
         ticket = st.text_input("Ticket")
         sucursal = st.selectbox("Sucursal", list(range(1, 101)))
-        cliente = st.text_input("Cliente")
+        cliente = st.text_input("ID_Cliente")
 
     with col2:
         venta = st.selectbox("Venta", ["AUTORIZADA", "NO AUTORIZADA", "AUTORIZADA PARCIAL"])
@@ -106,10 +106,12 @@ if submit_button:
 st.header("📊 Registros en tiempo real")
 
 # Filtros
-col1, col2 = st.columns(2)
+col1, col2,col3 = st.columns(3)
 with col1:
-    filtro_fecha = st.date_input("Filtrar por fecha", datetime.today())
+    filtro_cliente = st.text_input("Filtrar por ID Cliente", "")
 with col2:
+    filtro_fecha = st.date_input("Filtrar por fecha", datetime.today())
+with col3:
     filtro_ejecutivo = st.selectbox("Filtrar por Ejecutivo", ["Todos"] + ["Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
 
 # Función para obtener registros desde SQL Server
