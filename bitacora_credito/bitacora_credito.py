@@ -52,21 +52,21 @@ with st.form("registro_form", clear_on_submit=True):
         "Aut. Benjamin Rivera", "Aut. Jose Medina", "Aut. Ramon Casillas", "Aut. Area de crédito"
     ])
 
-# Crear una nueva fila para Artículo, Ejecutivo y Celular Cliente
-col4, col5, col6 = st.columns(3)
+    # Crear una nueva fila para Artículo, Ejecutivo y Celular Cliente
+    col4, col5, col6 = st.columns(3)
 
-with col4:
-    articulo = st.text_input("Artículo")
+    with col4:
+        articulo = st.text_input("Artículo")
 
-with col5:
-    ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
+    with col5:
+        ejecutivo = st.selectbox("Ejecutivo", ["Francis", "Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
 
-with col6:
-    cel_cte = st.text_input("Celular Cliente")
+    with col6:
+        cel_cte = st.text_input("Celular Cliente")
 
-# Fila aparte para Observación y Consulta Buró
-observacion = st.text_area("Observación")
-consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
+    # Fila aparte para Observación y Consulta Buró
+    observacion = st.text_area("Observación")
+    consulta_buro = st.selectbox("Consulta Buró", ["SI", "NO"])
 
    
 # ✅ IMPORTANTE: Botón de envío dentro del `st.form()`
