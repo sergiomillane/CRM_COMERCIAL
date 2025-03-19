@@ -8,12 +8,12 @@ st.markdown(
     <style>
         /* Cambiar el fondo a azul */
         body {
-            background-color: #4553FF !important;  /* Azul */
+            background-color: #ff813d !important;  /* Azul */
         }
 
         /* Cambiar el fondo de los contenedores de Streamlit */
         .stApp {
-            background-color: #4553FF !important;
+            background-color: #ff813d !important;
         }
     </style>
     """,
