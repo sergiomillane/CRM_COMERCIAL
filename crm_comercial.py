@@ -617,7 +617,8 @@ else:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
                 st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
-                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")                
+                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
+                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
                 st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
                     unsafe_allow_html=True,
@@ -777,7 +778,6 @@ else:
                 st.write(f"**Saldo Actual:** {cliente_actual['SaldoActual']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
-                st.write(f"**Enganche (No motos):** {cliente_actual['Enganche_No_Motos']}")
                 st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
                     unsafe_allow_html=True,
