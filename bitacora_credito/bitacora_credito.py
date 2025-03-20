@@ -12,7 +12,7 @@ culiacan_tz = pytz.timezone("America/Mazatlan")  # Zona horaria correcta para Si
 fecha_actual = datetime.now(culiacan_tz).date()
 
 # Usar la fecha con la zona horaria en Streamlit
-fecha = st.date_input("Fecha", fecha_actual)
+
 
 # Configurar la conexión a SQL Server usando pymssql
 DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
@@ -47,7 +47,7 @@ if pagina == "Bitácora de Actividades":
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            fecha = st.date_input("Fecha", datetime.today())
+            fecha = st.date_input("Fecha", fecha_actual)
             ticket = st.text_input("Ticket")
             moto = st.selectbox("Moto", ["SI", "NO"])
             sucursal = st.selectbox("Sucursal", list(range(1, 101)))
