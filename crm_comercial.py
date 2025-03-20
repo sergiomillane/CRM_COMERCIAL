@@ -763,7 +763,7 @@ else:
                     st.session_state["cliente_index_sinfriccion"] = min(cliente_index + 1, total_clients - 1)
 
             # Obtener cliente actual
-            cliente_actual = unique_clients.iloc[st.session_state["cliente_indexsinfriccion"]]
+            cliente_actual = unique_clients.iloc[st.session_state["cliente_index_sinfriccion"]]
 
             # Mostrar información del cliente actual
             st.subheader("Información del Cliente - Campaña Sin Fricción")
@@ -834,3 +834,10 @@ else:
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
+
+            st.write("Consulta SQL ejecutada:")
+            st.code(query_sinfriccion)  # Muestra la consulta que se ejecutó
+
+            st.write("Vista previa de los datos obtenidos desde SQL Server:")
+            st.write(data_sinfriccion)  # Muestra los datos importados en Streamlit
