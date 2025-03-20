@@ -687,12 +687,11 @@ else:
         # Verificar si el DataFrame está vacío antes de continuar
         if data_sinfriccion.empty:
             st.warning("No hay datos en la campaña sin fricción.")
+            unique_clients = pd.DataFrame()  # Se define como un DataFrame vacío para evitar errores posteriores.
         else:
             # Validar si la columna "Gestion" existe antes de crear "Gestion_NULL_Flag"
             if "Gestion" in data_sinfriccion.columns:
                 data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
-            else:
-                st.error("La columna 'Gestion' no existe en la tabla.")
 
             # Verificar si las columnas necesarias existen antes de ordenar
             if "Gestion_NULL_Flag" in data_sinfriccion.columns and "NumeroCliente" in data_sinfriccion.columns:
@@ -707,19 +706,18 @@ else:
                 unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
             else:
                 st.error("Las columnas necesarias para ordenar no están disponibles.")
+                unique_clients = pd.DataFrame()  # Se define como un DataFrame vacío para evitar errores posteriores.
 
-            total_clients = len(unique_clients)
+        total_clients = len(unique_clients)
 
-        # Agregar columna Jerarquía si no existe
-        if "NumeroCliente" not in data_sinfriccion.columns:
-            data_sinfriccion.insert(0, "NumeroCliente", range(1, len(data_sinfriccion) + 1))
-
-        if data_sinfriccion.empty:
-            st.warning("No hay datos en la campaña de sin fricción.")
+        if total_clients == 0:
+            st.warning("No hay clientes disponibles para mostrar.")
         else:
-            filtered_data = data_sinfriccion
-            unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
-            total_clients = len(unique_clients)
+            # Agregar columna Jerarquía si no existe
+            if "NumeroCliente" not in data_sinfriccion.columns:
+                data_sinfriccion.insert(0, "NumeroCliente", range(1, len(data_sinfriccion) + 1))
+
+            filtered_data = data_sinfriccion.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
 
             # Sección de búsqueda
             st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
@@ -777,7 +775,7 @@ else:
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
                 st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
-                
+
             with cols[1]:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
                 st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
@@ -802,7 +800,7 @@ else:
                     "Gestión",
                     options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+                        ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
@@ -817,21 +815,11 @@ else:
                         SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
                         WHERE ID_Cliente = :id_cliente
                     """)
-                    query_insert = text("""
-                        INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA SIN FRICCIÓN', GETDATE(), :gestor, :gestion, :comentario)
-                    """)
                     with engine.begin() as conn:
                         conn.execute(query_update, {
                             "gestion": gestion,
                             "comentario": comentario,
                             "id_cliente": cliente_actual["ID_Cliente"],
-                        })
-                        conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),
-                            "gestor": gestor,
-                            "gestion": gestion,
-                            "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
