@@ -154,7 +154,7 @@ if pagina == "Bitácora de Actividades":
     with col1:
         filtro_cliente = st.text_input("Filtrar por ID Cliente", "")
     with col2:
-        filtro_fecha = st.date_input("Filtrar por fecha", datetime.today())
+        filtro_fecha = st.date_input("Filtrar por fecha", fecha_actual)
     with col3:
         filtro_ejecutivo = st.selectbox("Filtrar por Ejecutivo", ["Todos"] + ["Alejandra", "Alma", "Francisco", "Mario", "Paul", "Victor", "Yadira", "Zulema", "Martin"])
 
