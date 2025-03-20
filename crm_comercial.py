@@ -683,22 +683,28 @@ else:
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-        # 🔹 Mostrar datos sin filtrar (para depuración)
-        st.write("🔍 Datos antes del filtrado por GestorVirtual:")
-        st.write(data_sinfriccion)
+        # 🔹 Mostrar datos sin filtrar
+        st.write("🔍 Datos antes del filtrado:")
+        st.dataframe(data_sinfriccion)
 
-        # 🔹 Aplicar filtro por gestor autenticado
+        # 🔹 Verificar si hay datos antes de filtrar
+        if data_sinfriccion.empty:
+            st.error("⚠️ No se encontraron datos en la tabla `CRM_SINFRICCION_Final`. Revisa la base de datos.")
+            st.stop()
+
+        # 🔹 Filtrar por gestor autenticado
         gestor_autenticado = st.session_state["gestor"].strip()
         data_sinfriccion = data_sinfriccion[data_sinfriccion["GestorVirtual"].str.strip() == gestor_autenticado]
 
-        # 🔹 Mostrar datos después del filtrado (para depuración)
-        st.write(f"🔍 Filtrando por GestorVirtual: {gestor_autenticado}")
-        st.write("🔍 Datos después del filtrado:")
-        st.write(data_sinfriccion)
+        # 🔹 Mostrar datos después del filtrado
+        st.write(f"🔍 Filtrando por GestorVirtual: **{gestor_autenticado}**")
+        st.dataframe(data_sinfriccion)
 
         # 🔹 Verificar si hay datos después del filtrado
         if data_sinfriccion.empty:
-            st.warning("No hay datos en la campaña SIN FRICCIÓN.")
+            st.warning("⚠️ No hay datos asignados a este gestor.")
+            st.stop()
+
         else:
             # 🔹 Asegurar que 'NumeroCliente' existe y tiene valores correctos
             if "NumeroCliente" not in data_sinfriccion.columns or data_sinfriccion["NumeroCliente"].isnull().all():
