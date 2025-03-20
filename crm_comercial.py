@@ -525,7 +525,7 @@ else:
 
         # Verificar si el DataFrame está vacío antes de continuar
         if data_motos.empty:
-            st.warning("No hay datos en la campaña de motos.")
+            st.warning("Ups! No tienes acceso a esta pestaña xD")
         else:
             # Crear una columna auxiliar para dar prioridad a los NULL
             data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
@@ -551,7 +551,7 @@ else:
             data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
 
         if data_motos.empty:
-            st.warning("No hay datos en la campaña de motos.")
+            st.warning(":(")
         else:
             filtered_data = data_motos
             unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
