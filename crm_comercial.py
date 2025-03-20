@@ -612,7 +612,6 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
-                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
@@ -773,7 +772,6 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
-                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
                 st.write(f"**Mensualidad:** {cliente_actual['Mensualidad_Actual']}")
