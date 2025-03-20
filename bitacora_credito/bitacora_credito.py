@@ -2,6 +2,17 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
+import pytz 
+from datetime import datetime 
+
+# Definir la zona horaria de Culiacán, Sinaloa (UTC -7)
+culiacan_tz = pytz.timezone("America/Mazatlan")  # Zona horaria correcta para Sinaloa
+
+# Obtener la fecha y hora actual en la zona horaria especificada
+fecha_actual = datetime.now(culiacan_tz).date()
+
+# Usar la fecha con la zona horaria en Streamlit
+fecha = st.date_input("Fecha", fecha_actual)
 
 # Configurar la conexión a SQL Server usando pymssql
 DATABASE_URL = "mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoyCobranza"
