@@ -776,7 +776,7 @@ else:
                 st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
-                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
+                st.write(f"**Mensualidad:** {cliente_actual['Mensualidad_Actual']}")
                 st.write(f"**Saldo Actual:** {cliente_actual['SaldoActual']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
