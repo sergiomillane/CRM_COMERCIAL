@@ -84,6 +84,7 @@ usuarios = {
     "jose_alfredo": {"gestor": "José Alfredo Alvarado Hernandez", "password": "u8FhwV", "admin": False},
     "jose_andres": {"gestor": "Jose Andres Borquez Blanco", "password": "Ams3lC", "admin": False},
     "jose_eduardo": {"gestor": "Jose Eduardo Lopez Portillo Bazua", "password": "ZJ1Q35", "admin": False},
+    "bryan_zazueta": {"gestor": "Bryan Zazueta", "password": "ZJ1Q35", "admin": False},
     "jose_daniel": {"gestor": "Jose Daniel Flores Herrera", "password": "ZJ1QRZ", "admin": False},
     "julissa_iveth": {"gestor": "Julissa Iveth Gamez Ramirez", "password": "OnHnp4", "admin": False},
     "junnyel_rios": {"gestor":"Bryan Junnyel Rios Castro", "password": "HhR43m", "admin":False},
@@ -675,55 +676,158 @@ else:
 
 
 
-    elif page == "CAMPAÑA LC":
-        query_lc = "SELECT * FROM LC_COMERCIAL ORDER BY ID_CLIENTE ASC"
-        data_lc = pd.read_sql(query_lc, engine)
+    elif page == "CAMPAÑA SIN FRICCIÓN":
+        # Cargar los datos desde SQL (QUITAMOS EL ORDER BY, ya que vamos a ordenar en Pandas)
+        query_sinfriccion = "SELECT * FROM Tabla_Campaña_SinFriccion"
+        data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-        if "Jerarquia" not in data_lc.columns:
-            data_lc.insert(0, "Jerarquia", range(1, len(data_lc) + 1))
+        # Filtrar solo los clientes asignados al gestor autenticado
+        data_sinfriccion = data_sinfriccion[data_sinfriccion["GestorVirtual"] == gestor_autenticado]
 
-        if data_lc.empty:
-            st.warning("No hay datos en la campaña de LC.")
+        # Verificar si el DataFrame está vacío antes de continuar
+        if data_sinfriccion.empty:
+            st.warning("No hay datos en la campaña sin fricción.")
         else:
-            unique_clients = data_lc.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
+            # Crear una columna auxiliar para dar prioridad a los NULL
+            data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+
+            # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
+            unique_clients = (
+                data_sinfriccion
+                .drop_duplicates(subset=["ID_Cliente"])
+                .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
+                .reset_index(drop=True)
+            )
+
+            # Eliminar la columna auxiliar después de ordenar
+            unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
+
             total_clients = len(unique_clients)
 
-            # Navegación
-            cliente_index = st.session_state.get("cliente_index_lc", 0)
-            cliente_index = max(0, min(cliente_index, total_clients - 1))
-            st.session_state["cliente_index_lc"] = cliente_index
 
-            if st.button("Anterior"):
-                st.session_state["cliente_index_lc"] = max(cliente_index - 1, 0)
-            if st.button("Siguiente"):
-                st.session_state["cliente_index_lc"] = min(cliente_index + 1, total_clients - 1)
+
+        
+        # Agregar columna Jerarquía si no existe
+        if "NumeroCliente" not in data_sinfriccion.columns:
+            data_sinfriccion.insert(0, "NumeroCliente", range(1, len(data_sinfriccion) + 1))
+
+        if data_sinfriccion.empty:
+            st.warning("No hay datos en la campaña de sin friccion.")
+        else:
+            filtered_data = data_sinfriccion
+            unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
+            total_clients = len(unique_clients)
+
+            # Sección de búsqueda
+            st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
+            cols = st.columns([1, 1])
+            with cols[0]:
+                input_jerarquia = st.text_input("Borre el numero antes de usar el botón de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
+            with cols[1]:
+                input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
+
+            # Búsqueda por Jerarquía
+            if input_jerarquia:
+                try:
+                    input_jerarquia = int(input_jerarquia)
+                    cliente_index = unique_clients[unique_clients["NumeroCliente"] == input_jerarquia].index
+                    if len(cliente_index) > 0:
+                        st.session_state["cliente_index_sinfriccion"] = cliente_index[0]
+                    else:
+                        st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
+                except ValueError:
+                    st.error("Por favor, ingrese un número válido.")
+
+            # Búsqueda por ID Cliente
+            if input_id_cliente:
+                cliente_index = unique_clients[unique_clients["ID_Cliente"] == input_id_cliente].index
+                if len(cliente_index) > 0:
+                    st.session_state["cliente_index_sinfriccion"] = cliente_index[0]
+                else:
+                    st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
+
+            # Validar el índice del cliente actual
+            if "cliente_index_sinfriccion" not in st.session_state:
+                st.session_state["cliente_index_sinfriccion"] = 0
+            cliente_index = st.session_state["cliente_index_sinfriccion"]
+            cliente_index = max(0, min(cliente_index, total_clients - 1))
+            st.session_state["cliente_index_sinfriccion"] = cliente_index
+
+            # Botones de navegación
+            cols_navigation = st.columns([1, 1])
+            with cols_navigation[0]:
+                if st.button("Anterior"):
+                    st.session_state["cliente_index_sinfriccion"] = max(cliente_index - 1, 0)
+            with cols_navigation[1]:
+                if st.button("Siguiente"):
+                    st.session_state["cliente_index_sinfriccion"] = min(cliente_index + 1, total_clients - 1)
 
             # Obtener cliente actual
-            cliente_actual = unique_clients.iloc[st.session_state["cliente_index_lc"]]
+            cliente_actual = unique_clients.iloc[st.session_state["cliente_index_sinfriccion"]]
 
-            # Mostrar información del cliente
-            st.subheader("Información del Cliente - Campaña LC")
-            st.write(f"**Nombre:** {cliente_actual['NOMBRE']}")
-            st.write(f"**ID Cliente:** {cliente_actual['ID_CLIENTE']}")
-            st.write(f"**Límite de Crédito:** {cliente_actual['NUEVO_LC']}")
-            st.write(f"**Saldo Actual:** {cliente_actual['SALDO_ACTUAL']}")
-            st.write(f"**Teléfono:** {cliente_actual['TELEFONO']}")
+            # Mostrar información del cliente actual
+            st.subheader("Información del Cliente - Campaña Sin Fricción")
+            cols = st.columns(2)
+            with cols[0]:
+                st.write(f"**Nombre:** {cliente_actual['Nom_Cte']}")
+                st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
+                st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
+                st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
+                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
+                
+            with cols[1]:
+                st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
+                st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
+                st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
+                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
+                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+                st.markdown(
+                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
+                    unsafe_allow_html=True,
+                )
+            st.markdown('</div>', unsafe_allow_html=True)
+                
 
             st.divider()
 
             # Gestión del Cliente
-            gestion = st.selectbox("Gestión", ["Interesado", "No Interesado", "Llamar Después"], index=0)
-            comentario = st.text_area("Comentarios")
+            st.subheader("Gestiones del Cliente")
+            gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
+            comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
 
-            if st.button("Guardar Gestión"):
+            with st.form(key=f"gestion_form_motos"):
+                gestion = st.selectbox(
+                    "Gestión",
+                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
+                    index=0 if st.session_state.get(gestion_key) is None else
+                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+                )
+                comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
+                submit_button = st.form_submit_button("Guardar Gestión")
+
+            if submit_button:
+                st.session_state[gestion_key] = gestion
+                st.session_state[comentario_key] = comentario
                 try:
+                    gestor = st.session_state.get("gestor") 
+                    query_update = text("""
+                        UPDATE Tabla_Campaña_SinFriccion
+                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                        WHERE ID_Cliente = :id_cliente
+                    """)
                     query_insert = text("""
-                        INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA LC', GETDATE(), :gestion, :comentario)
+                        INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
+                        conn.execute(query_update, {
+                            "gestion": gestion,
+                            "comentario": comentario,
+                            "id_cliente": cliente_actual["ID_Cliente"],
+                        })
                         conn.execute(query_insert, {
-                            "id_cliente": cliente_actual["ID_CLIENTE"],
+                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
+                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
                             "gestion": gestion,
                             "comentario": comentario
                         })
