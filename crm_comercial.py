@@ -688,31 +688,34 @@ else:
         if data_sinfriccion.empty:
             st.warning("No hay datos en la campaña sin fricción.")
         else:
-            # Crear una columna auxiliar para dar prioridad a los NULL
-            data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+            # Validar si la columna "Gestion" existe antes de crear "Gestion_NULL_Flag"
+            if "Gestion" in data_sinfriccion.columns:
+                data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+            else:
+                st.error("La columna 'Gestion' no existe en la tabla.")
 
-            # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
-            unique_clients = (
-                data_sinfriccion
-                .drop_duplicates(subset=["ID_Cliente"])
-                .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
-                .reset_index(drop=True)
-            )
+            # Verificar si las columnas necesarias existen antes de ordenar
+            if "Gestion_NULL_Flag" in data_sinfriccion.columns and "NumeroCliente" in data_sinfriccion.columns:
+                unique_clients = (
+                    data_sinfriccion
+                    .drop_duplicates(subset=["ID_Cliente"])
+                    .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
+                    .reset_index(drop=True)
+                )
 
-            # Eliminar la columna auxiliar después de ordenar
-            unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
+                # Eliminar la columna auxiliar después de ordenar
+                unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
+            else:
+                st.error("Las columnas necesarias para ordenar no están disponibles.")
 
             total_clients = len(unique_clients)
 
-
-
-        
         # Agregar columna Jerarquía si no existe
         if "NumeroCliente" not in data_sinfriccion.columns:
             data_sinfriccion.insert(0, "NumeroCliente", range(1, len(data_sinfriccion) + 1))
 
         if data_sinfriccion.empty:
-            st.warning("No hay datos en la campaña de sin friccion.")
+            st.warning("No hay datos en la campaña de sin fricción.")
         else:
             filtered_data = data_sinfriccion
             unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
@@ -786,7 +789,6 @@ else:
                     unsafe_allow_html=True,
                 )
             st.markdown('</div>', unsafe_allow_html=True)
-                
 
             st.divider()
 
@@ -817,7 +819,7 @@ else:
                     """)
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
-                        VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
+                        VALUES (:id_cliente, 'CAMPAÑA SIN FRICCIÓN', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
                         conn.execute(query_update, {
@@ -826,8 +828,8 @@ else:
                             "id_cliente": cliente_actual["ID_Cliente"],
                         })
                         conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
+                            "id_cliente": int(cliente_actual["ID_Cliente"]),
+                            "gestor": gestor,
                             "gestion": gestion,
                             "comentario": comentario
                         })
