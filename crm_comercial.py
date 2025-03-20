@@ -150,7 +150,7 @@ else:
     # Sidebar para navegación y botón de cerrar sesión
     st.sidebar.title(f"Gestor: {gestor_autenticado}")
     st.sidebar.markdown("---")
-    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO", "CAMPAÑA MOTOS", "CAMPAÑA SIN FRICCIÓN"])
+    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO", "CAMPAÑA MOTOS", "CAMPAÑA SIN FRICCION"])
     st.sidebar.markdown("---")
     if st.sidebar.button("Cerrar Sesión"):
         cerrar_sesion()
@@ -679,24 +679,25 @@ else:
     elif page == "CAMPAÑA SIN FRICCION":
         st.subheader("📋 Campaña SIN FRICCIÓN")
 
-            # 🔹 Verificar conexión a la base de datos
+        # 🔹 Cargar los datos desde SQL
         try:
-                query_sinfriccion = "SELECT TOP 5 * FROM CRM_SINFRICCION_Final"
-                data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
+            query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
+            data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-                # 🔹 Mostrar datos sin filtrar
-                st.write("🔍 Datos desde SQL (primeras 5 filas):")
-                st.dataframe(data_sinfriccion)
+            # 🔹 Mostrar datos sin filtrar
+            st.write("🔍 Datos obtenidos desde SQL:")
+            st.dataframe(data_sinfriccion)
 
-                if data_sinfriccion.empty:
-                    st.error("⚠️ La tabla `CRM_SINFRICCION_Final` está vacía en SQL. Revisa la base de datos.")
-                    st.stop()
+            if data_sinfriccion.empty:
+                st.error("⚠️ La tabla `CRM_SINFRICCION_Final` está vacía en SQL.")
+                st.stop()
 
         except Exception as e:
-            st.error(f"❌ Error al conectar con SQL: {e}")
+            st.error(f"❌ Error al conectarse a SQL: {e}")
             st.stop()
 
-            
+
+
         # 🔹 Cargar los datos desde SQL
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
@@ -840,3 +841,6 @@ else:
                     st.success("✅ Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"⚠️ Error al guardar los cambios: {e}")
+
+
+
