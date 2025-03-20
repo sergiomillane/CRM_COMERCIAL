@@ -617,8 +617,7 @@ else:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
                 st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
-                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
-                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+                st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")                
                 st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
                     unsafe_allow_html=True,
