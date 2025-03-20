@@ -84,7 +84,7 @@ usuarios = {
     "jose_alfredo": {"gestor": "José Alfredo Alvarado Hernandez", "password": "u8FhwV", "admin": False},
     "jose_andres": {"gestor": "Jose Andres Borquez Blanco", "password": "Ams3lC", "admin": False},
     "jose_eduardo": {"gestor": "Jose Eduardo Lopez Portillo Bazua", "password": "ZJ1Q35", "admin": False},
-    "bryan_zazueta": {"gestor": "Bryan Zazueta", "password": "ZJ1Q35", "admin": False},
+    "bryan_felix": {"gestor": "Bryan Felix", "password": "ZJ1Q35", "admin": False},
     "jose_daniel": {"gestor": "Jose Daniel Flores Herrera", "password": "ZJ1QRZ", "admin": False},
     "julissa_iveth": {"gestor": "Julissa Iveth Gamez Ramirez", "password": "OnHnp4", "admin": False},
     "junnyel_rios": {"gestor":"Bryan Junnyel Rios Castro", "password": "HhR43m", "admin":False},
