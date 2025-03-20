@@ -525,7 +525,7 @@ else:
 
         # Verificar si el DataFrame está vacío antes de continuar
         if data_motos.empty:
-            st.warning("Ups! No tienes acceso a esta pestaña xD")
+            st.warning("Ups! No tienes acceso a esta pestaña:(")
         else:
             # Crear una columna auxiliar para dar prioridad a los NULL
             data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
@@ -551,7 +551,7 @@ else:
             data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
 
         if data_motos.empty:
-            st.warning(":(")
+            st.warning("xD")
         else:
             filtered_data = data_motos
             unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
@@ -679,6 +679,24 @@ else:
     elif page == "CAMPAÑA SIN FRICCION":
         st.subheader("📋 Campaña SIN FRICCIÓN")
 
+            # 🔹 Verificar conexión a la base de datos
+        try:
+                query_sinfriccion = "SELECT TOP 5 * FROM CRM_SINFRICCION_Final"
+                data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
+
+                # 🔹 Mostrar datos sin filtrar
+                st.write("🔍 Datos desde SQL (primeras 5 filas):")
+                st.dataframe(data_sinfriccion)
+
+                if data_sinfriccion.empty:
+                    st.error("⚠️ La tabla `CRM_SINFRICCION_Final` está vacía en SQL. Revisa la base de datos.")
+                    st.stop()
+
+        except Exception as e:
+            st.error(f"❌ Error al conectar con SQL: {e}")
+            st.stop()
+
+            
         # 🔹 Cargar los datos desde SQL
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
