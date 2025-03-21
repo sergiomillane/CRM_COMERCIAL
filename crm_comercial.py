@@ -680,28 +680,28 @@ else:
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-        # Filtrar solo los clientes asignados al gestor autenticado
-        data_sinfriccion = data_sinfriccion[data_sinfriccion["GestorVirtual"] == gestor_autenticado]
+# Filtrar solo los clientes asignados al gestor autenticado
+        data_sinfriccion = data_sinfriccion[data_sinfriccion["GestorVirtual"] == gestor_autenticado].copy()
 
-        # Verificar si el DataFrame está vacío antes de continuar
-        if data_sinfriccion.empty:
-            st.warning("No hay datos en la campaña de motos.")
-        else:
-            # Crear una columna auxiliar para dar prioridad a los NULL
-            data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+        # Eliminar los clientes sin ID válido
+        data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
 
-            # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
-            unique_clients = (
-                data_sinfriccion
-                .drop_duplicates(subset=["ID_Cliente"])
-                .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
-                .reset_index(drop=True)
-            )
+        # Crear columna auxiliar para dar prioridad a los que no tienen gestión
+        data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
 
-            # Eliminar la columna auxiliar después de ordenar
-            unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
+        # Ordenar: primero los no gestionados (Gestion_NULL_Flag = 1), luego por NumeroCliente original
+        data_sinfriccion = data_sinfriccion.sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True]).reset_index(drop=True)
 
-            total_clients = len(unique_clients)
+        # Generar una nueva jerarquía personalizada para mostrar al usuario (empieza en 1)
+        data_sinfriccion["JerarquiaPersonalizada"] = range(1, len(data_sinfriccion) + 1)
+
+        # Eliminar columna auxiliar
+        data_sinfriccion.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+
+
+
+        # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
+        data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
 
 
 
@@ -772,6 +772,7 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
+                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
                 st.write(f"**Mensualidad:** {cliente_actual['Mensualidad_Actual']}")
