@@ -521,37 +521,16 @@ else:
         data_motos = pd.read_sql(query_motos, engine)
 
         # Filtrar solo los clientes asignados al gestor autenticado
-        data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
+        data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].sort_values(by="NumeroCliente").reset_index(drop=True)
 
         # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
-        # Verificar si el DataFrame está vacío antes de continuar
-        if data_motos.empty:
-            st.warning("No hay datos en la campaña de motos.")
-        else:
-            # Crear una columna auxiliar para dar prioridad a los NULL
-            data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
-
-            # Ordenar primero por NULL (1 = NULL, 0 = No NULL), luego por NumeroCliente
-            unique_clients = (
-                data_motos
-                .drop_duplicates(subset=["ID_Cliente"])
-                .sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True])  # NULL primero
-                .reset_index(drop=True)
-            )
-
-            # Eliminar la columna auxiliar después de ordenar
-            unique_clients = unique_clients.drop(columns=["Gestion_NULL_Flag"])
-
-            total_clients = len(unique_clients)
-
-
-
         
         # Agregar columna Jerarquía si no existe
         if "NumeroCliente" not in data_motos.columns:
-            data_motos.insert(0, "NumeroCliente", range(1, len(data_motos) + 1))
+            data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
+
 
         if data_motos.empty:
             st.warning("No hay datos en la campaña de motos.")
