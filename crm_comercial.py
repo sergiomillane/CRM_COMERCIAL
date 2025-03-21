@@ -814,7 +814,7 @@ else:
                         WHERE ID_Cliente = :id_cliente
                     """)
                     query_insert = text("""
-                        INSERT INTO GESTIONES_SINFRICCION_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                        INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA SIN FRICCION', GETDATE(), :gestor, :gestion, :comentario)
                     """)
                     with engine.begin() as conn:
