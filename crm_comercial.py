@@ -523,14 +523,21 @@ else:
         # Filtrar solo los clientes asignados al gestor autenticado
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
 
-        # Crear columna auxiliar: 1 si Gestion es NULL, 0 si no lo es
+        # Eliminar los clientes sin ID válido
+        data_motos = data_motos.dropna(subset=["ID_Cliente"])
+
+        # Crear columna auxiliar para dar prioridad a los que no tienen gestión
         data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
 
-        # Ordenar: primero los NULL en Gestión, luego por Número de Cliente
+        # Ordenar: primero los no gestionados (Gestion_NULL_Flag = 1), luego por NumeroCliente original
         data_motos = data_motos.sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True]).reset_index(drop=True)
 
-        # Eliminar la columna auxiliar (opcional)
+        # Generar una nueva jerarquía personalizada para mostrar al usuario (empieza en 1)
+        data_motos["JerarquiaPersonalizada"] = range(1, len(data_motos) + 1)
+
+        # Eliminar columna auxiliar
         data_motos.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+
 
 
         # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
