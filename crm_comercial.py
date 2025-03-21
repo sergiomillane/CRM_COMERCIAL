@@ -523,6 +523,9 @@ else:
         # Filtrar solo los clientes asignados al gestor autenticado
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado]
 
+        # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
+        data_motos = data_motos.dropna(subset=["ID_Cliente"])
+
         # Verificar si el DataFrame está vacío antes de continuar
         if data_motos.empty:
             st.warning("No hay datos en la campaña de motos.")
@@ -612,6 +615,7 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
+                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
                 
             with cols[1]:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
