@@ -521,7 +521,17 @@ else:
         data_motos = pd.read_sql(query_motos, engine)
 
         # Filtrar solo los clientes asignados al gestor autenticado
-        data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].sort_values(by="NumeroCliente").reset_index(drop=True)
+        data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
+
+        # Crear columna auxiliar: 1 si Gestion es NULL, 0 si no lo es
+        data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
+
+        # Ordenar: primero los NULL en Gestión, luego por Número de Cliente
+        data_motos = data_motos.sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True]).reset_index(drop=True)
+
+        # Eliminar la columna auxiliar (opcional)
+        data_motos.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+
 
         # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
