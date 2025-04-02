@@ -836,7 +836,8 @@ else:
     
 
     # Tu código de indicadores
-    elif page == "INDICADORES":
+    # Tu código de indicadores
+    elif page == "Indicadores":
         st.header("📊 Indicadores de gestiones")
 
         # Definir la función de conexión correctamente fuera del bloque `elif`
@@ -879,6 +880,7 @@ else:
                 # Filtrar gestiones por campaña
                 campañas = gestiones_diarias["CAMPAÑA"].unique()
                 
+                # Asegúrate de que las campañas 'MOTOS' y 'SIN FRICCION' estén incluidas
                 for campaña in campañas:
                     st.subheader(f"📈 Gestiones realizadas - {campaña}")
                     df_campaña = gestiones_diarias[gestiones_diarias["CAMPAÑA"] == campaña]
@@ -887,3 +889,4 @@ else:
                     st.dataframe(df_campaña, use_container_width=True)
             else:
                 st.warning("No se encontraron gestiones para el día de hoy.")
+
