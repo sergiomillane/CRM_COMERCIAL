@@ -875,11 +875,15 @@ else:
                 st.error(f"Error al obtener los datos de gestiones diarias: {e}")
                 gestiones_diarias = pd.DataFrame()
 
-            # Mostrar las tablas si hay datos
+            # Verificar si se obtuvieron datos
             if not gestiones_diarias.empty:
+                # Mostrar el dataframe completo para depuración
+                st.subheader("Datos de gestiones diarias")
+                st.write(gestiones_diarias)
+
                 # Filtrar gestiones por campaña
                 campañas = gestiones_diarias["CAMPAÑA"].unique()
-                
+
                 # Asegúrate de que las campañas 'MOTOS' y 'SIN FRICCION' estén incluidas
                 for campaña in campañas:
                     st.subheader(f"📈 Gestiones realizadas - {campaña}")
