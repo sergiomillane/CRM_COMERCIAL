@@ -874,19 +874,17 @@ else:
                 st.error(f"Error al obtener los datos de gestiones diarias: {e}")
                 gestiones_diarias = pd.DataFrame()
 
-            # Verificar si se obtuvieron datos
+            # Mostrar las tablas si hay datos
             if not gestiones_diarias.empty:
                 # Filtrar gestiones por campaña
                 campañas = gestiones_diarias["CAMPAÑA"].unique()
-
-                # Asegúrate de que las campañas 'MOTOS' y 'SIN FRICCION' estén incluidas
+                
                 for campaña in campañas:
                     st.subheader(f"📈 Gestiones realizadas - {campaña}")
                     df_campaña = gestiones_diarias[gestiones_diarias["CAMPAÑA"] == campaña]
 
                     # Mostrar tabla de gestiones por cada gestor para esa campaña
                     st.dataframe(df_campaña, use_container_width=True)
-
             else:
                 st.warning("No se encontraron gestiones para el día de hoy.")
 
