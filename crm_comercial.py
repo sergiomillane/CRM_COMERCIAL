@@ -833,6 +833,17 @@ else:
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
 
+    # Definir la función de conexión correctamente
+    def get_connection():
+        try:
+            engine = create_engine("mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoYCobranza")
+            connection = engine.connect()
+            return connection
+        except Exception as e:
+            st.error(f"Error al conectar a la base de datos: {e}")
+            return None
+
+    # Tu código de indicadores
     elif page == "Indicadores":
         st.header("📊 Indicadores de gestiones")
 
@@ -874,5 +885,3 @@ else:
                     st.dataframe(df_campaña, use_container_width=True)
             else:
                 st.warning("No se encontraron gestiones para el día de hoy.")
-
-
