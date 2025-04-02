@@ -150,7 +150,7 @@ else:
     # Sidebar para navegación y botón de cerrar sesión
     st.sidebar.title(f"Gestor: {gestor_autenticado}")
     st.sidebar.markdown("---")
-    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO", "CAMPAÑA MOTOS", "CAMPAÑA SIN FRICCION"])
+    page = st.sidebar.radio("Ir a", ["CAT", "ORIGINACION DE CREDITO", "CAMPAÑA MOTOS", "CAMPAÑA SIN FRICCION","IRRECUPERABLES","Indicadores"])
     st.sidebar.markdown("---")
     if st.sidebar.button("Cerrar Sesión"):
         cerrar_sesion()
@@ -832,3 +832,47 @@ else:
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
+    elif page == "Indicadores":
+        st.header("📊 Indicadores de gestiones")
+
+        from datetime import datetime
+        today = datetime.today().date()
+
+        # Conexión a la base de datos
+        conn = get_connection()
+        if conn:
+            try:
+                # Query para obtener las gestiones realizadas en el día por cada campaña
+                query_gestiones_diarias = text("""
+                    SELECT 
+                        GESTOR, CAMPAÑA, COUNT(*) AS GESTIONES_TOTALES, 
+                        CAST(FECHA_GESTION AS DATE) AS FECHA_GESTION
+                    FROM GESTIONES_CAMPAÑAS_COMERCIAL
+                    WHERE CAST(FECHA_GESTION AS DATE) = :today
+                    GROUP BY GESTOR, CAMPAÑA, CAST(FECHA_GESTION AS DATE)
+                """)
+                gestiones_diarias = pd.read_sql(query_gestiones_diarias, conn, params={"today": today})
+
+                # Cerrar la conexión
+                conn.close()
+
+            except Exception as e:
+                st.error(f"Error al obtener los datos de gestiones diarias: {e}")
+                gestiones_diarias = pd.DataFrame()
+
+            # Mostrar las tablas si hay datos
+            if not gestiones_diarias.empty:
+                # Filtrar gestiones por campaña
+                campañas = gestiones_diarias["CAMPAÑA"].unique()
+                
+                for campaña in campañas:
+                    st.subheader(f"📈 Gestiones realizadas - {campaña}")
+                    df_campaña = gestiones_diarias[gestiones_diarias["CAMPAÑA"] == campaña]
+
+                    # Mostrar tabla de gestiones por cada gestor para esa campaña
+                    st.dataframe(df_campaña, use_container_width=True)
+            else:
+                st.warning("No se encontraron gestiones para el día de hoy.")
+
+
