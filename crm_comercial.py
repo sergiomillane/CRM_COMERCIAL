@@ -836,7 +836,6 @@ else:
     
 
     # Tu código de indicadores
-    # Tu código de indicadores
     elif page == "Indicadores":
         st.header("📊 Indicadores de gestiones")
 
@@ -877,10 +876,6 @@ else:
 
             # Verificar si se obtuvieron datos
             if not gestiones_diarias.empty:
-                # Mostrar el dataframe completo para depuración
-                st.subheader("Datos de gestiones diarias")
-                st.write(gestiones_diarias)
-
                 # Filtrar gestiones por campaña
                 campañas = gestiones_diarias["CAMPAÑA"].unique()
 
@@ -891,6 +886,8 @@ else:
 
                     # Mostrar tabla de gestiones por cada gestor para esa campaña
                     st.dataframe(df_campaña, use_container_width=True)
+
             else:
                 st.warning("No se encontraron gestiones para el día de hoy.")
+
 
