@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
-import matplotlib.pyplot as plt
 import plotly.express as px
 
 # Estilos personalizados
