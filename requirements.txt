@@ -3,3 +3,4 @@ pandas
 pyodbc
 sqlalchemy
 pymssql
+plotly
