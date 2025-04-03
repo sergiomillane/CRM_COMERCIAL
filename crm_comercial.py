@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from sqlalchemy.sql import text
+import matplotlib.pyplot as plt
+import plotly.express as px
 
 # Estilos personalizados
 st.markdown(
@@ -835,11 +837,10 @@ else:
 
     
 
-    # Tu código de indicadores
-    elif page == "Indicadores":
+    elif page == "INDICADORES":
         st.header("📊 Indicadores de gestiones")
 
-        # Definir la función de conexión correctamente fuera del bloque `elif`
+        # Definir la función de conexión correctamente
         def get_connection():
             try:
                 engine = create_engine("mssql+pymssql://credito:Cr3d$.23xme@52.167.231.145:51433/CreditoYCobranza")
@@ -849,43 +850,156 @@ else:
                 st.error(f"Error al conectar a la base de datos: {e}")
                 return None
 
-        from datetime import datetime
-        today = datetime.today().date()
-
         # Conexión a la base de datos
         conn = get_connection()
         if conn:
             try:
-                # Query para obtener las gestiones realizadas en el día por cada campaña
-                query_gestiones_diarias = text("""
-                    SELECT 
-                        GESTOR, CAMPAÑA, COUNT(*) AS GESTIONES_TOTALES, 
-                        CAST(FECHA_GESTION AS DATE) AS FECHA_GESTION
-                    FROM GESTIONES_CAMPAÑAS_COMERCIAL
-                    WHERE CAST(FECHA_GESTION AS DATE) = :today
-                    GROUP BY GESTOR, CAMPAÑA, CAST(FECHA_GESTION AS DATE)
+                # Consulta para obtener las gestiones de "SIN FRICCION"
+                query_sinfriccion = text("""
+                    SELECT
+                        [GESTOR],
+                        COUNT(*) AS [NumeroDeGestiones]
+                    FROM
+                        [CreditoyCobranza].[dbo].[GESTIONES_CAMPAÑA_SINFRICCION]
+                    WHERE
+                        CONVERT(DATE, [FECHA_GESTION]) = CONVERT(DATE, GETDATE())  -- Filtra solo el día de hoy
+                    GROUP BY
+                        [GESTOR]
+                    ORDER BY
+                        NumeroDeGestiones DESC;
                 """)
-                gestiones_diarias = pd.read_sql(query_gestiones_diarias, conn, params={"today": today})
+                gestiones_sinfriccion = pd.read_sql(query_sinfriccion, conn)
+
+                # Consulta para obtener las gestiones por tipo en la campaña "SIN FRICCION"
+                query_gestiones_sinfriccion_tipo = text("""
+                    SELECT
+                        [GESTOR],
+                        [GESTION],
+                        COUNT(*) AS [NumeroDeGestiones]
+                    FROM
+                        [CreditoyCobranza].[dbo].[GESTIONES_CAMPAÑA_SINFRICCION]
+                    WHERE
+                        CONVERT(DATE, [FECHA_GESTION]) = CONVERT(DATE, GETDATE())  -- Filtra solo el día de hoy
+                    GROUP BY
+                        [GESTOR], [GESTION]
+                    ORDER BY
+                        [GESTOR], NumeroDeGestiones DESC;
+                """)
+                gestiones_sinfriccion_tipo = pd.read_sql(query_gestiones_sinfriccion_tipo, conn)
+
+                # Consulta para obtener las gestiones de "CAMPAÑAS_COMERCIAL"
+                query_comercial = text("""
+                    SELECT
+                        [GESTOR],
+                        COUNT(*) AS [NumeroDeGestiones]
+                    FROM
+                        [CreditoyCobranza].[dbo].[GESTIONES_CAMPAÑAS_COMERCIAL]
+                    WHERE
+                        CONVERT(DATE, [FECHA_GESTION]) = CONVERT(DATE, GETDATE())  -- Filtra solo el día de hoy
+                    GROUP BY
+                        [GESTOR]
+                    ORDER BY
+                        NumeroDeGestiones DESC;
+                """)
+                gestiones_comercial = pd.read_sql(query_comercial, conn)
+
+                # Consulta para obtener las gestiones por tipo en la campaña "CAMPAÑAS_COMERCIAL"
+                query_gestiones_comercial_tipo = text("""
+                    SELECT
+                        [GESTOR],
+                        [GESTION],
+                        COUNT(*) AS [NumeroDeGestiones]
+                    FROM
+                        [CreditoyCobranza].[dbo].[GESTIONES_CAMPAÑAS_COMERCIAL]
+                    WHERE
+                        CONVERT(DATE, [FECHA_GESTION]) = CONVERT(DATE, GETDATE())  -- Filtra solo el día de hoy
+                    GROUP BY
+                        [GESTOR], [GESTION]
+                    ORDER BY
+                        [GESTOR], NumeroDeGestiones DESC;
+                """)
+                gestiones_comercial_tipo = pd.read_sql(query_gestiones_comercial_tipo, conn)
 
                 # Cerrar la conexión
                 conn.close()
 
             except Exception as e:
-                st.error(f"Error al obtener los datos de gestiones diarias: {e}")
-                gestiones_diarias = pd.DataFrame()
+                st.error(f"Error al obtener los datos de gestiones: {e}")
+                gestiones_sinfriccion = pd.DataFrame()
+                gestiones_comercial = pd.DataFrame()
+                gestiones_sinfriccion_tipo = pd.DataFrame()
+                gestiones_comercial_tipo = pd.DataFrame()
 
-            # Mostrar las tablas si hay datos
-            if not gestiones_diarias.empty:
-                # Filtrar gestiones por campaña
-                campañas = gestiones_diarias["CAMPAÑA"].unique()
-                
-                for campaña in campañas:
-                    st.subheader(f"📈 Gestiones realizadas - {campaña}")
-                    df_campaña = gestiones_diarias[gestiones_diarias["CAMPAÑA"] == campaña]
+            # Mostrar los resultados de la campaña "SIN FRICCION"
+            if not gestiones_sinfriccion.empty:
+                st.subheader("Campaña Sin Fricción")
 
-                    # Mostrar tabla de gestiones por cada gestor para esa campaña
-                    st.dataframe(df_campaña, use_container_width=True)
+                # Crear un selectbox para elegir el gestor de la campaña "SIN FRICCION"
+                gestores_sinfriccion = gestiones_sinfriccion['GESTOR'].unique()
+                gestor_sinfriccion_seleccionado = st.selectbox('Selecciona un Gestor - Sin Fricción', gestores_sinfriccion)
+
+                # Filtrar las gestiones por el gestor seleccionado de "SIN FRICCION"
+                gestiones_sinfriccion_filtradas = gestiones_sinfriccion_tipo[gestiones_sinfriccion_tipo['GESTOR'] == gestor_sinfriccion_seleccionado]
+
+                # Configurar columnas para mostrar lado a lado
+                col1, col2 = st.columns([1, 2])
+
+                with col1:
+                    st.subheader("Gestiones por Ejecutivo")
+                    st.dataframe(gestiones_sinfriccion, use_container_width=True)
+
+                with col2:
+                    st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_sinfriccion_seleccionado}")
+
+                    # Crear un gráfico interactivo de Plotly
+                    fig_sinfriccion = px.bar(
+                        gestiones_sinfriccion_filtradas,
+                        x='GESTION',
+                        y='NumeroDeGestiones',
+                        color='GESTION',
+                        labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
+                        color_discrete_sequence=px.colors.qualitative.Set2
+                    )
+                    st.plotly_chart(fig_sinfriccion)
+
             else:
-                st.warning("No se encontraron gestiones para el día de hoy.")
+                st.warning("No se encontraron gestiones para la campaña SIN FRICCION el día de hoy.")
 
+            # Mostrar los resultados de la campaña "CAMPAÑAS COMERCIAL"
+            if not gestiones_comercial.empty:
+                st.subheader("Campaña Comercial")
 
+                # Crear un selectbox para elegir el gestor de la campaña "CAMPAÑAS_COMERCIAL"
+                gestores_comercial = gestiones_comercial['GESTOR'].unique()
+                gestor_comercial_seleccionado = st.selectbox('Selecciona un Gestor - Comercial', gestores_comercial)
+
+                # Filtrar las gestiones por el gestor seleccionado de "CAMPAÑAS_COMERCIAL"
+                gestiones_comercial_filtradas = gestiones_comercial_tipo[gestiones_comercial_tipo['GESTOR'] == gestor_comercial_seleccionado]
+
+                # Configurar columnas para mostrar lado a lado
+                col1, col2 = st.columns([1, 2])
+
+                with col1:
+                    st.subheader("Gestiones por Ejecutivo")
+                    st.dataframe(gestiones_comercial, use_container_width=True)
+
+                with col2:
+                    st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_comercial_seleccionado}")
+
+                    # Crear un gráfico interactivo de Plotly
+                    fig_comercial = px.bar(
+                        gestiones_comercial_filtradas,
+                        x='GESTION',
+                        y='NumeroDeGestiones',
+                        color='GESTION',
+                        labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
+                        color_discrete_sequence=px.colors.qualitative.Set1
+                    )
+                    st.plotly_chart(fig_comercial)
+
+            else:
+                st.warning("No se encontraron gestiones para la campaña Comercial el día de hoy.")
+
+        # Si la conexión no se realizó o hubo algún error en la consulta, muestra un mensaje
+        else:
+            st.warning("No se pudo establecer conexión con la base de datos.")
