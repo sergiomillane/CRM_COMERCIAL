@@ -1006,18 +1006,18 @@ else:
 
                 # Tabla de clientes de ejemplo
                 data_clientes = pd.DataFrame({
-                    "Nombre": [
+                    "Cliente": [
                         "Laura Méndez", "Carlos Torres", "Ana Ruiz",
                         "Eduardo Vargas", "Sofía Camacho", "Mario Delgado"
                     ],
-                    "Número de Teléfono": [
+                    "Teléfono": [
                         "6441234567", "6442345678", "6443456789",
                         "6444567890", "6445678901", "6446789012"
                     ],
                     "Límite de Crédito": [
                         "$30,000", "$45,000", "$38,000", "$50,000", "$65,000", "$33,500"
                     ],
-                    "Clasificación de Cliente": [
+                    "CC": [
                         "Distinguido", "Esencial", "Nuevo",
                         "Distinguido", "Nuevo", "Esencial"
                     ],
