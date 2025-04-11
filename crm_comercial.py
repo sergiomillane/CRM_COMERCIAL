@@ -940,26 +940,21 @@ else:
                 # Filtrar las gestiones por el gestor seleccionado de "SIN FRICCION"
                 gestiones_sinfriccion_filtradas = gestiones_sinfriccion_tipo[gestiones_sinfriccion_tipo['GESTOR'] == gestor_sinfriccion_seleccionado]
 
-                # Configurar columnas para mostrar lado a lado
-                col1, col2 = st.columns([1, 2])
+                # Mostrar tabla general de gestiones
+                st.subheader("Gestiones por Ejecutivo")
+                st.dataframe(gestiones_sinfriccion, use_container_width=True)
 
-                with col1:
-                    st.subheader("Gestiones por Ejecutivo")
-                    st.dataframe(gestiones_sinfriccion, use_container_width=True)
-
-                with col2:
-                    st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_sinfriccion_seleccionado}")
-
-                    # Crear un gráfico interactivo de Plotly
-                    fig_sinfriccion = px.bar(
-                        gestiones_sinfriccion_filtradas,
-                        x='GESTION',
-                        y='NumeroDeGestiones',
-                        color='GESTION',
-                        labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
-                        color_discrete_sequence=px.colors.qualitative.Set2
-                    )
-                    st.plotly_chart(fig_sinfriccion)
+                # Mostrar gráfico de distribución por tipo de gestión
+                st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_sinfriccion_seleccionado}")
+                fig_sinfriccion = px.bar(
+                    gestiones_sinfriccion_filtradas,
+                    x='GESTION',
+                    y='NumeroDeGestiones',
+                    color='GESTION',
+                    labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
+                    color_discrete_sequence=px.colors.qualitative.Set2
+                )
+                st.plotly_chart(fig_sinfriccion)
 
             else:
                 st.warning("No se encontraron gestiones para la campaña SIN FRICCION el día de hoy.")
@@ -975,30 +970,21 @@ else:
                 # Filtrar las gestiones por el gestor seleccionado de "CAMPAÑAS_COMERCIAL"
                 gestiones_comercial_filtradas = gestiones_comercial_tipo[gestiones_comercial_tipo['GESTOR'] == gestor_comercial_seleccionado]
 
-                # Configurar columnas para mostrar lado a lado
-                col1, col2 = st.columns([1, 2])
+                # Mostrar tabla general de gestiones
+                st.subheader("Gestiones por Ejecutivo")
+                st.dataframe(gestiones_comercial, use_container_width=True)
 
-                with col1:
-                    st.subheader("Gestiones por Ejecutivo")
-                    st.dataframe(gestiones_comercial, use_container_width=True)
-
-                with col2:
-                    st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_comercial_seleccionado}")
-
-                    # Crear un gráfico interactivo de Plotly
-                    fig_comercial = px.bar(
-                        gestiones_comercial_filtradas,
-                        x='GESTION',
-                        y='NumeroDeGestiones',
-                        color='GESTION',
-                        labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
-                        color_discrete_sequence=px.colors.qualitative.Set1
-                    )
-                    st.plotly_chart(fig_comercial)
+                # Mostrar gráfico de distribución por tipo de gestión
+                st.subheader(f"Distribución de gestiones por tipo para el Gestor: {gestor_comercial_seleccionado}")
+                fig_comercial = px.bar(
+                    gestiones_comercial_filtradas,
+                    x='GESTION',
+                    y='NumeroDeGestiones',
+                    color='GESTION',
+                    labels={"GESTION": "Tipo de Gestión", "NumeroDeGestiones": "Número de Gestiones"},
+                    color_discrete_sequence=px.colors.qualitative.Set1
+                )
+                st.plotly_chart(fig_comercial)
 
             else:
                 st.warning("No se encontraron gestiones para la campaña Comercial el día de hoy.")
-
-        # Si la conexión no se realizó o hubo algún error en la consulta, muestra un mensaje
-        else:
-            st.warning("No se pudo establecer conexión con la base de datos.")
