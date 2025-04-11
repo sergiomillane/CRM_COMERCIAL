@@ -986,5 +986,50 @@ else:
                 )
                 st.plotly_chart(fig_comercial)
 
+                # 🔽 VISUALIZACIONES DE EJEMPLO — DEMO SOLO PARA VISUALIZACIÓN
+                st.subheader("📈 Ejemplo: Clientes Contactados con Compra (Visualización Demo)")
+
+                # Gráfico de pastel de ejemplo
+                data_pie = pd.DataFrame({
+                    "Respuesta": ["Sí compra", "No compra"],
+                    "Porcentaje": [11, 89]
+                })
+
+                fig_pie = px.pie(
+                    data_pie,
+                    names="Respuesta",
+                    values="Porcentaje",
+                    title="Clientes contactados con compra",
+                    color_discrete_sequence=px.colors.qualitative.Set1
+                )
+                st.plotly_chart(fig_pie)
+
+                # Tabla de clientes de ejemplo
+                data_clientes = pd.DataFrame({
+                    "Nombre": [
+                        "Laura Méndez", "Carlos Torres", "Ana Ruiz",
+                        "Eduardo Vargas", "Sofía Camacho", "Mario Delgado"
+                    ],
+                    "Número de Teléfono": [
+                        "6441234567", "6442345678", "6443456789",
+                        "6444567890", "6445678901", "6446789012"
+                    ],
+                    "Límite de Crédito": [
+                        "$30,000", "$45,000", "$38,000", "$50,000", "$65,000", "$33,500"
+                    ],
+                    "Clasificación de Cliente": [
+                        "Distinguido", "Esencial", "Nuevo",
+                        "Distinguido", "Nuevo", "Esencial"
+                    ],
+                    "Gestor": [
+                        "Nancy", "Maria Fernanda", "Bryan", "David Samano", "Nancy", "Bryan"
+                    ]
+                })
+
+                st.subheader("🧾 Clientes Contactados (Demo)")
+                st.dataframe(data_clientes, use_container_width=True)
+
             else:
                 st.warning("No se encontraron gestiones para la campaña Comercial el día de hoy.")
+
+
