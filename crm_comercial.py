@@ -987,7 +987,7 @@ else:
                 st.plotly_chart(fig_comercial)
 
                 # 🔽 VISUALIZACIONES DE EJEMPLO — DEMO SOLO PARA VISUALIZACIÓN
-                st.subheader("📈 Ejemplo: Clientes Contactados con Compra (Visualización Demo)")
+                st.subheader("📈 Clientes Contactados sin Compra ")
 
                 # Gráfico de pastel de ejemplo
                 data_pie = pd.DataFrame({
@@ -999,7 +999,7 @@ else:
                     data_pie,
                     names="Respuesta",
                     values="Porcentaje",
-                    title="Clientes contactados con compra",
+                    title="Clientes contactados sin compra",
                     color_discrete_sequence=px.colors.qualitative.Set1
                 )
                 st.plotly_chart(fig_pie)
@@ -1022,11 +1022,14 @@ else:
                         "Distinguido", "Nuevo", "Esencial"
                     ],
                     "Gestor": [
-                        "Nancy", "Maria Fernanda", "Bryan", "David Samano", "Nancy", "Bryan"
+                        "Robert Boada", "Maria Fernanda", "Bryan", "David Samano", "Nancy", "Bryan"
+                    ],
+                    "Fecha":[
+                        "10-04-2025","10-04-2025","10-04-2025","10-04-2025","10-04-2025","10-04-2025"
                     ]
                 })
 
-                st.subheader("🧾 Clientes Contactados (Demo)")
+                st.subheader("🧾 Clientes Contactados ")
                 st.dataframe(data_clientes, use_container_width=True)
 
             else:
