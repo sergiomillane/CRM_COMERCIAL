@@ -517,38 +517,28 @@ else:
                     st.error(f"Error al guardar los cambios: {e}")
                     
     elif page == "CAMPAÑA MOTOS":
-    # Cargar los datos desde SQL (QUITAMOS EL ORDER BY, ya que vamos a ordenar en Pandas)
         query_motos = "SELECT * FROM CRM_MOTOS_Final"
         data_motos = pd.read_sql(query_motos, engine)
 
-        # Filtrar solo los clientes asignados al gestor autenticado
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
-
-        # Eliminar los clientes sin ID válido
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
-        # Crear columna auxiliar para dar prioridad a los que no tienen gestión
+        # Flags para jerarquía
         data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
+        data_motos["Sin_Contacto_Flag"] = (data_motos["Gestion"] == "Sin contacto").astype(int)
+        data_motos["Fecha_Orden"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce").fillna(pd.Timestamp("2099-12-31"))
 
-        # Ordenar: primero los no gestionados (Gestion_NULL_Flag = 1), luego por NumeroCliente original
-        data_motos = data_motos.sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True]).reset_index(drop=True)
+        data_motos = data_motos.sort_values(
+            by=["Gestion_NULL_Flag", "Sin_Contacto_Flag", "Fecha_Orden", "NumeroCliente"],
+            ascending=[False, True, True, True]
+        ).reset_index(drop=True)
 
-        # Generar una nueva jerarquía personalizada para mostrar al usuario (empieza en 1)
         data_motos["JerarquiaPersonalizada"] = range(1, len(data_motos) + 1)
-
-        # Eliminar columna auxiliar
-        data_motos.drop(columns=["Gestion_NULL_Flag"], inplace=True)
-
-
-
-        # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
+        data_motos.drop(columns=["Gestion_NULL_Flag", "Sin_Contacto_Flag", "Fecha_Orden"], inplace=True)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
-        
-        # Agregar columna Jerarquía si no existe
         if "NumeroCliente" not in data_motos.columns:
             data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
-
 
         if data_motos.empty:
             st.warning("No hay datos en la campaña de motos.")
@@ -557,7 +547,6 @@ else:
             unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
             total_clients = len(unique_clients)
 
-            # Sección de búsqueda
             st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
             cols = st.columns([1, 1])
             with cols[0]:
@@ -565,7 +554,6 @@ else:
             with cols[1]:
                 input_id_cliente = st.text_input("ID Cliente", "", help="Ingrese el ID del cliente y presione Enter")
 
-            # Búsqueda por Jerarquía
             if input_jerarquia:
                 try:
                     input_jerarquia = int(input_jerarquia)
@@ -577,7 +565,6 @@ else:
                 except ValueError:
                     st.error("Por favor, ingrese un número válido.")
 
-            # Búsqueda por ID Cliente
             if input_id_cliente:
                 cliente_index = unique_clients[unique_clients["ID_Cliente"] == input_id_cliente].index
                 if len(cliente_index) > 0:
@@ -585,14 +572,12 @@ else:
                 else:
                     st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
 
-            # Validar el índice del cliente actual
             if "cliente_index_motos" not in st.session_state:
                 st.session_state["cliente_index_motos"] = 0
             cliente_index = st.session_state["cliente_index_motos"]
             cliente_index = max(0, min(cliente_index, total_clients - 1))
             st.session_state["cliente_index_motos"] = cliente_index
 
-            # Botones de navegación
             cols_navigation = st.columns([1, 1])
             with cols_navigation[0]:
                 if st.button("Anterior"):
@@ -601,10 +586,8 @@ else:
                 if st.button("Siguiente"):
                     st.session_state["cliente_index_motos"] = min(cliente_index + 1, total_clients - 1)
 
-            # Obtener cliente actual
             cliente_actual = unique_clients.iloc[st.session_state["cliente_index_motos"]]
 
-            # Mostrar información del cliente actual
             st.subheader("Información del Cliente - Campaña Motos")
             cols = st.columns(2)
             with cols[0]:
@@ -613,23 +596,17 @@ else:
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
                 st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
-                
+
             with cols[1]:
                 st.write(f"**Modelo:** {cliente_actual['Modelo_Moto']}")
                 st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
                 st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
-                st.markdown(
-                    f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
-                    unsafe_allow_html=True,
-                )
-            st.markdown('</div>', unsafe_allow_html=True)
-                
+                st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>", unsafe_allow_html=True)
 
             st.divider()
 
-            # Gestión del Cliente
             st.subheader("Gestiones del Cliente")
             gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
             comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
@@ -639,7 +616,7 @@ else:
                     "Gestión",
                     options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+                        ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
@@ -665,14 +642,15 @@ else:
                             "id_cliente": cliente_actual["ID_Cliente"],
                         })
                         conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
+                            "id_cliente": int(cliente_actual["ID_Cliente"]),
+                            "gestor": gestor,
                             "gestion": gestion,
                             "comentario": comentario
                         })
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
 
 
 
