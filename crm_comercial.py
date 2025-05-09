@@ -523,18 +523,24 @@ else:
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
-        # Flags para jerarquía
-        data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
-        data_motos["Sin_Contacto_Flag"] = (data_motos["Gestion"] == "Sin contacto").astype(int)
+        # Nueva prioridad de gestión personalizada
+        prioridad_gestion = {
+            "Interesado": 0,
+            "Llamar Después": 1,
+            "Recado": 2,
+            "Sin contacto": 3,
+            "No interesado": 4
+        }
+        data_motos["GestionOrden"] = data_motos["Gestion"].map(prioridad_gestion).fillna(99)
         data_motos["Fecha_Orden"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce").fillna(pd.Timestamp("2099-12-31"))
 
         data_motos = data_motos.sort_values(
-            by=["Gestion_NULL_Flag", "Sin_Contacto_Flag", "Fecha_Orden", "NumeroCliente"],
-            ascending=[False, True, True, True]
+            by=["GestionOrden", "Fecha_Orden", "NumeroCliente"],
+            ascending=[True, True, True]
         ).reset_index(drop=True)
 
         data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
-        data_motos.drop(columns=["Gestion_NULL_Flag", "Sin_Contacto_Flag", "Fecha_Orden"], inplace=True)
+        data_motos.drop(columns=["GestionOrden", "Fecha_Orden"], inplace=True)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
         if "NumeroCliente" not in data_motos.columns:
@@ -614,9 +620,11 @@ else:
             with st.form(key=f"gestion_form_motos"):
                 gestion = st.selectbox(
                     "Gestión",
-                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
+                    options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                        ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+                        ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado"].index(
+                            st.session_state[gestion_key]
+                        ),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
@@ -625,7 +633,7 @@ else:
                 st.session_state[gestion_key] = gestion
                 st.session_state[comentario_key] = comentario
                 try:
-                    gestor = st.session_state.get("gestor") 
+                    gestor = st.session_state.get("gestor")
                     query_update = text("""
                         UPDATE CRM_MOTOS_Final
                         SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
@@ -650,6 +658,7 @@ else:
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
+
 
 
 
