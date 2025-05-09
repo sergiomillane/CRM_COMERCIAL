@@ -533,7 +533,7 @@ else:
             ascending=[False, True, True, True]
         ).reset_index(drop=True)
 
-        data_motos["JerarquiaPersonalizada"] = range(1, len(data_motos) + 1)
+        data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
         data_motos.drop(columns=["Gestion_NULL_Flag", "Sin_Contacto_Flag", "Fecha_Orden"], inplace=True)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
