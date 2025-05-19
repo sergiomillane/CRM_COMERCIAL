@@ -532,14 +532,18 @@ else:
             "No interesado": 4
         }
         data_motos["GestionOrden"] = data_motos["Gestion"].map(prioridad_gestion).fillna(99)
+        # Convertimos FECHA_GESTION a datetime y ponemos una fecha muy futura si está vacía
         data_motos["Fecha_Orden"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce").fillna(pd.Timestamp("2099-12-31"))
 
+        # Ordenamos primero por antigüedad de gestión, luego por tipo de gestión
         data_motos = data_motos.sort_values(
-            by=["GestionOrden", "Fecha_Orden", "NumeroCliente"],
-            ascending=[True, True, True]
+            by=["Fecha_Orden", "GestionOrden"],
+            ascending=[True, True]
         ).reset_index(drop=True)
 
+        # Asignamos el número jerárquico después del orden
         data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
+
         data_motos.drop(columns=["GestionOrden", "Fecha_Orden"], inplace=True)
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
