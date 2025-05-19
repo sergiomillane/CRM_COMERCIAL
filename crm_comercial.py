@@ -524,6 +524,7 @@ else:
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
 
         # Nueva prioridad de gestión personalizada
+        # Nueva prioridad de gestión personalizada
         prioridad_gestion = {
             "Interesado": 0,
             "Llamar Después": 1,
@@ -531,21 +532,23 @@ else:
             "Sin contacto": 3,
             "No interesado": 4
         }
+
+        # Asignación de orden y detección de nulos
         data_motos["GestionOrden"] = data_motos["Gestion"].map(prioridad_gestion).fillna(99)
-        # Convertimos FECHA_GESTION a datetime y ponemos una fecha muy futura si está vacía
+        data_motos["SinGestion"] = data_motos["FECHA_GESTION"].isna().astype(int)
         data_motos["Fecha_Orden"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce").fillna(pd.Timestamp("2099-12-31"))
 
-        # Ordenamos primero por antigüedad de gestión, luego por tipo de gestión
+        # Orden final
         data_motos = data_motos.sort_values(
-            by=["Fecha_Orden", "GestionOrden"],
-            ascending=[True, True]
+            by=["SinGestion", "Fecha_Orden", "GestionOrden"],
+            ascending=[False, True, True]
         ).reset_index(drop=True)
 
-        # Asignamos el número jerárquico después del orden
+        # Asignar jerarquía después del ordenamiento
         data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
 
-        data_motos.drop(columns=["GestionOrden", "Fecha_Orden"], inplace=True)
-        data_motos = data_motos.dropna(subset=["ID_Cliente"])
+        # Limpiar columnas auxiliares
+        data_motos.drop(columns=["GestionOrden", "SinGestion", "Fecha_Orden"], inplace=True)
 
         if "NumeroCliente" not in data_motos.columns:
             data_motos["NumeroCliente"] = range(1, len(data_motos) + 1)
