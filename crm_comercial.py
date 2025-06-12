@@ -104,7 +104,8 @@ usuarios = {
     "roberto_boada": {"gestor": "Roberto Boada", "password": "admin_vb3$", "admin": True},
     "fernando_valdez": {"gestor": "Fernando Valdez", "password": "admin_vb3$", "admin": True},
     "juan_alberto": {"gestor": "Juan", "password": "admin_vb3$", "admin": True},
-    "sergio_millan": {"gestor": "Sergio Millan", "password": "admin_vb3$", "admin": True}, 
+    "sergio_millan": {"gestor": "Sergio Millan", "password": "admin_vb3$", "admin": True},
+    "rafael_plata": {"gestor": "Rafael Plata", "password": "admin_vb3$", "admin": True}, 
     "administrador": {"gestor": "Administrador", "password": "admin_vb3$", "admin": True},
 }
 
@@ -671,39 +672,59 @@ else:
 
 
     elif page == "CAMPAÑA SIN FRICCION":
-    # Cargar los datos desde SQL (QUITAMOS EL ORDER BY, ya que vamos a ordenar en Pandas)
+        # Cargar los datos desde SQL (sin ORDER BY, ordenaremos en Pandas)
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-# Filtrar solo los clientes asignados al gestor autenticado
-        data_sinfriccion = data_sinfriccion[data_sinfriccion["GestorVirtual"] == gestor_autenticado].copy()
+        # Filtrar solo los clientes asignados al gestor autenticado
+        data_sinfriccion = data_sinfriccion[
+            data_sinfriccion["GestorVirtual"] == gestor_autenticado
+        ].copy()
 
         # Eliminar los clientes sin ID válido
         data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
 
-        # Crear columna auxiliar para dar prioridad a los que no tienen gestión
-        data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+        # Asegurarnos de que FECHA_GESTION sea datetime
+        data_sinfriccion["FECHA_GESTION"] = pd.to_datetime(
+            data_sinfriccion["FECHA_GESTION"]
+        )
 
-        # Ordenar: primero los no gestionados (Gestion_NULL_Flag = 1), luego por NumeroCliente original
-        data_sinfriccion = data_sinfriccion.sort_values(by=["Gestion_NULL_Flag", "NumeroCliente"], ascending=[False, True]).reset_index(drop=True)
+        # ¿Hay al menos un registro sin gestión?
+        hay_null = data_sinfriccion["Gestion"].isna().any()
 
-        # Generar una nueva jerarquía personalizada para mostrar al usuario (empieza en 1)
-        data_sinfriccion["JerarquiaPersonalizada"] = range(1, len(data_sinfriccion) + 1)
-
-        # Eliminar columna auxiliar
-        data_sinfriccion.drop(columns=["Gestion_NULL_Flag"], inplace=True)
-
+        if hay_null:
+            # 1) Crear flag para los NULL
+            data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
+            # 2) Ordenar: primero los no gestionados (flag=1), luego el resto,
+            #    ambos grupos por FECHA_GESTION ascendente
+            data_sinfriccion = (
+                data_sinfriccion
+                .sort_values(
+                    by=["Gestion_NULL_Flag", "FECHA_GESTION"],
+                    ascending=[False, True]
+                )
+                .reset_index(drop=True)
+            )
+            # 3) Borrar columna auxiliar
+            data_sinfriccion.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+        else:
+            # No hay NULL: sólo orden por FECHA_GESTION ascendente
+            data_sinfriccion = (
+                data_sinfriccion
+                .sort_values(by=["FECHA_GESTION"], ascending=True)
+                .reset_index(drop=True)
+            )
 
 
         # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
         data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
 
-
+        data_sinfriccion["jerarquia"] = data_sinfriccion.index + 1
 
         
         # Agregar columna Jerarquía si no existe
-        if "NumeroCliente" not in data_sinfriccion.columns:
-            data_sinfriccion.insert(0, "NumeroCliente", range(1, len(data_sinfriccion) + 1))
+        if "jerarquia" not in data_sinfriccion.columns:
+            data_sinfriccion.insert(0, "jerarquia", range(1, len(data_sinfriccion) + 1))
 
         if data_sinfriccion.empty:
             st.warning("No hay datos en la campaña sin fricción.")
@@ -724,7 +745,7 @@ else:
             if input_jerarquia:
                 try:
                     input_jerarquia = int(input_jerarquia)
-                    cliente_index = unique_clients[unique_clients["NumeroCliente"] == input_jerarquia].index
+                    cliente_index = unique_clients[unique_clients["jerarquia"] == input_jerarquia].index
                     if len(cliente_index) > 0:
                         st.session_state["cliente_index_sinfriccion"] = cliente_index[0]
                     else:
@@ -767,13 +788,24 @@ else:
                 st.write(f"**ID cliente:** {cliente_actual['ID_Cliente']}")
                 st.write(f"**Sucursal:** {cliente_actual['Ultima_Sucursal']}")
                 st.write(f"**Teléfono:** {cliente_actual['Telefono']}")
-                st.write(f"**Jerarquia:** {cliente_actual['NumeroCliente']}")
+                st.write(f"**Jerarquia:** {cliente_actual['jerarquia']}")
                 
             with cols[1]:
                 st.write(f"**Mensualidad:** {cliente_actual['Mensualidad_Actual']}")
                 st.write(f"**Saldo Actual:** {cliente_actual['SaldoActual']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
+            #  st.write("**Fecha última gestión:** "f"{cliente_actual['FECHA_GESTION']:%Y/%m/%d}")
+                # Intentar convertir a fecha; NaT si falla o es nulo
+                raw_fecha = cliente_actual.get("FECHA_GESTION", None)
+                fecha_dt = pd.to_datetime(raw_fecha, errors="coerce")  # convierte invalidos a NaT
+                if pd.isna(fecha_dt):
+                    fecha_str = "N/A"
+                else:
+                    fecha_str = fecha_dt.strftime("%Y/%m/%d")
+
+                st.write(f"**Fecha última gestión:** {fecha_str}")
+
                 st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
                     unsafe_allow_html=True,
