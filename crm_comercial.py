@@ -516,7 +516,10 @@ else:
                     st.success("Gestión guardada exitosamente.")
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
-                    
+
+
+
+
     elif page == "CAMPAÑA MOTOS":
         # 1) Cargar datos
         query_motos = "SELECT * FROM CRM_MOTOS_Final"
@@ -640,9 +643,11 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     gestor = st.session_state.get("gestor")
+                    ## FECHA_GESTION = GETDATE() ==> se elimino este dato de  UPDATE CRM_MOTOS_Final solo se guardara en  INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL
+                    ## para actualizar al dia siguiente con el sp [[Actualizar_CRM_MOTOS]] y no afecte en la jerarquia diara 
                     query_update = text("""
                         UPDATE CRM_MOTOS_Final
-                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                        SET Gestion = :gestion, Comentario = :comentario
                         WHERE ID_Cliente = :id_cliente
                     """)
                     query_insert = text("""
@@ -668,7 +673,7 @@ else:
 
 
 
-
+##--------------------------------------------------------------sin friccion------------------------------------------------------
     elif page == "CAMPAÑA SIN FRICCION":
         # Cargar los datos desde SQL (sin ORDER BY, ordenaremos en Pandas)
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
@@ -833,15 +838,20 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     gestor = st.session_state.get("gestor") 
+                    ## FECHA_GESTION = GETDATE() ==> se elimino este dato de  UPDATE CRM_SINFRICCION_Final solo se guardara en  INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION
+                    ## para actualizar al dia siguiente con el sp [Actualizar_CRM_SINFRICCION] y no afecte en la jerarquia diara 
                     query_update = text("""
                         UPDATE CRM_SINFRICCION_Final
-                        SET Gestion = :gestion, Comentario = :comentario, FECHA_GESTION = GETDATE()
+                        SET Gestion = :gestion, Comentario = :comentario 
                         WHERE ID_Cliente = :id_cliente
                     """)
+
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA SIN FRICCION', GETDATE(), :gestor, :gestion, :comentario)
                     """)
+
+
                     with engine.begin() as conn:
                         conn.execute(query_update, {
                             "gestion": gestion,
