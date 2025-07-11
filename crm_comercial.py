@@ -518,11 +518,11 @@ else:
                     st.error(f"Error al guardar los cambios: {e}")
 
 
-
+##---------------------------------------------------CAMPAÑA MOTOS----------------------------------------------------------
 
     elif page == "CAMPAÑA MOTOS":
         # 1) Cargar datos
-        query_motos = "SELECT * FROM CRM_MOTOS_Final"
+        query_motos = "SELECT * FROM CRM_MOTOS_Final where gestion <> 'Numero equivocado'"
         data_motos = pd.read_sql(query_motos, engine)
         # 2) Filtrar por gestor y eliminar IDs inválidos
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
@@ -629,9 +629,9 @@ else:
             with st.form(key=f"gestion_form_motos"):
                 gestion = st.selectbox(
                     "Gestión",
-                    options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado"],
+                    options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado" , "Numero equivocado"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                        ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado"].index(
+                        ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado" , "Numero equivocado"].index(
                             st.session_state[gestion_key]
                         ),
                 )
@@ -676,7 +676,7 @@ else:
 ##--------------------------------------------------------------sin friccion------------------------------------------------------
     elif page == "CAMPAÑA SIN FRICCION":
         # Cargar los datos desde SQL (sin ORDER BY, ordenaremos en Pandas)
-        query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final"
+        query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final where gestion <> 'Numero equivocado'"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
         # Filtrar solo los clientes asignados al gestor autenticado
@@ -826,9 +826,9 @@ else:
             with st.form(key=f"gestion_form_sinfriccion"):
                 gestion = st.selectbox(
                     "Gestión",
-                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto"],
+                    options=[None, "Interesado", "No interesado", "Recado", "Sin contacto", "Numero equivocado"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No interesado", "Recado", "Sin contacto"].index(st.session_state[gestion_key]),
+                          ["Interesado", "No interesado", "Recado", "Sin contacto", "Numero equivocado"].index(st.session_state[gestion_key]),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
