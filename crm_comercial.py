@@ -619,7 +619,14 @@ else:
                 st.write(f"**Costo Moto:** {cliente_actual['Costo_Moto']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
-                st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+                
+                # Formatear enganche como porcentaje
+                enganche_valor = cliente_actual.get('Enganche_Motos', 0)
+                if pd.notna(enganche_valor) and enganche_valor != 0:
+                    enganche_porcentaje = f"{float(enganche_valor) * 100:.0f}%"
+                else:
+                    enganche_porcentaje = "0%"
+                st.write(f"**Enganche:** {enganche_porcentaje}")
                 
                 # Fecha última gestión
                 raw_fecha = cliente_actual.get("FECHA_GESTION", None)
@@ -627,7 +634,6 @@ else:
                 fecha_str = fecha_dt.strftime("%Y/%m/%d") if pd.notna(fecha_dt) else "N/A"
                 st.write(f"**Fecha de Última Gestión:** {fecha_str}")
                 st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>", unsafe_allow_html=True)
-
             st.divider()
             
             # 10) Formulario de gestión
