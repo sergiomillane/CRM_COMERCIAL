@@ -524,37 +524,43 @@ else:
         # 1) Cargar datos
         query_motos = "SELECT * FROM CRM_MOTOS_Final where gestion <> 'Numero equivocado'"
         data_motos = pd.read_sql(query_motos, engine)
+        
         # 2) Filtrar por gestor y eliminar IDs inválidos
         data_motos = data_motos[data_motos["GestorVirtual"] == gestor_autenticado].copy()
         data_motos = data_motos.dropna(subset=["ID_Cliente"])
+        
         # 3) Asegurar FECHA_GESTION como datetime
-        data_motos["FECHA_GESTION"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce" )
-        hay_null = data_motos["Gestion"].isna().any()
-        # 4) Detectar si hay registros sin gestión
-        if hay_null:
-            # 4a) Flag para los sin gestionar
-            data_motos["Gestion_NULL_Flag"] = data_motos["Gestion"].isna().astype(int)
-            # 4b) Orden: primero sin gestionar, luego por fecha ascendente
-            data_motos = (data_motos.sort_values(by=["Gestion_NULL_Flag", "FECHA_GESTION"],ascending=[False, True]).reset_index(drop=True))
-            data_motos.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+        data_motos["FECHA_GESTION"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce")
+        
+        # 4) ORDENAMIENTO FIJO - Solo se ejecuta una vez al día por el SP nocturno
+        # La jerarquía ya debe venir calculada desde la base de datos
+        # Si no existe columna jerarquia en BD, calcularla aquí pero mantenerla fija
+        
+        # La columna de jerarquía en BD se llama "NumeroCliente"
+        if "NumeroCliente" in data_motos.columns and not data_motos["NumeroCliente"].isna().all():
+            # Si ya existe jerarquía en BD, mantenerla tal como está
+            data_motos = data_motos.sort_values(by=["NumeroCliente"], ascending=True).reset_index(drop=True)
+            data_motos["jerarquia"] = data_motos["NumeroCliente"]
         else:
-            # 4c) Si no hay nulos, solo orden por fecha asc
+            # Crear jerarquía solo si no existe en BD
+            # Ordenar: primero sin gestión (fecha null), luego por fecha ascendente  
+            data_motos["orden_auxiliar"] = data_motos["FECHA_GESTION"].fillna(pd.Timestamp.min)
             data_motos = (
                 data_motos
-                .sort_values(by=["FECHA_GESTION"], ascending=True)
+                .sort_values(by=["orden_auxiliar"], ascending=True)
                 .reset_index(drop=True)
             )
-        # 5) Asignar jerarquía (igual que en Sin Fricción)
-        data_motos["jerarquia"] = data_motos.index + 1
-
-       
+            data_motos["jerarquia"] = data_motos.index + 1
+            data_motos.drop(columns=["orden_auxiliar"], inplace=True)
+        
         if data_motos.empty:
             st.warning("No hay datos en la campaña de motos.")
         else:
-            # 6) Preparar lista única de clientes
+            # 5) Preparar lista única de clientes (manteniendo jerarquía original)
             unique_clients = data_motos.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
             total_clients = len(unique_clients)
-            # 7) UI de búsqueda por jerarquía o ID
+            
+            # 6) UI de búsqueda por jerarquía o ID
             st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
             cols = st.columns([1, 1])
             with cols[0]:
@@ -580,23 +586,25 @@ else:
                 else:
                     st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
             
-            # 8) Inicializar y acotar índice
+            # 7) Inicializar y acotar índice
             if "cliente_index_motos" not in st.session_state:
                 st.session_state["cliente_index_motos"] = 0
             cliente_index = st.session_state["cliente_index_motos"]
             cliente_index = max(0, min(cliente_index, total_clients - 1))
             st.session_state["cliente_index_motos"] = cliente_index
-            # 9) Botones de navegación
-            nav_cols  = st.columns([1, 1])
-            with nav_cols [0]:
+            
+            # 8) Botones de navegación
+            nav_cols = st.columns([1, 1])
+            with nav_cols[0]:
                 if st.button("Anterior"):
                     st.session_state["cliente_index_motos"] = max(cliente_index - 1, 0)
-            with nav_cols [1]:
+            with nav_cols[1]:
                 if st.button("Siguiente"):
                     st.session_state["cliente_index_motos"] = min(cliente_index + 1, total_clients - 1)
 
             cliente_actual = unique_clients.iloc[st.session_state["cliente_index_motos"]]
-            # 10) Mostrar cliente actual
+            
+            # 9) Mostrar cliente actual
             st.subheader("Información del Cliente - Campaña Motos")
             cols = st.columns(2)
             with cols[0]:
@@ -612,6 +620,7 @@ else:
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
                 st.write(f"**Enganche:** {cliente_actual['Enganche_Motos']}")
+                
                 # Fecha última gestión
                 raw_fecha = cliente_actual.get("FECHA_GESTION", None)
                 fecha_dt = pd.to_datetime(raw_fecha, errors="coerce")
@@ -619,9 +628,9 @@ else:
                 st.write(f"**Fecha de Última Gestión:** {fecha_str}")
                 st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>", unsafe_allow_html=True)
 
-
             st.divider()
-            # 11) Formulario de gestión
+            
+            # 10) Formulario de gestión
             st.subheader("Gestiones del Cliente")
             gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
             comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
@@ -629,9 +638,9 @@ else:
             with st.form(key=f"gestion_form_motos"):
                 gestion = st.selectbox(
                     "Gestión",
-                    options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado" , "Numero equivocado"],
+                    options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado", "Numero equivocado"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                        ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado" , "Numero equivocado"].index(
+                        ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado", "Numero equivocado"].index(
                             st.session_state[gestion_key]
                         ),
                 )
@@ -643,17 +652,23 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     gestor = st.session_state.get("gestor")
-                    ## FECHA_GESTION = GETDATE() ==> se elimino este dato de  UPDATE CRM_MOTOS_Final solo se guardara en  INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL
-                    ## para actualizar al dia siguiente con el sp [[Actualizar_CRM_MOTOS]] y no afecte en la jerarquia diara 
+                    
+                    # IMPORTANTE: NO actualizar FECHA_GESTION en CRM_MOTOS_Final
+                    # Solo actualizar Gestion y Comentario
+                    # La fecha se actualizará mañana con el SP nocturno
                     query_update = text("""
                         UPDATE CRM_MOTOS_Final
-                        SET Gestion = :gestion, Comentario = :comentario
+                        SET Gestion = :gestion, 
+                            Comentario = :comentario
                         WHERE ID_Cliente = :id_cliente
                     """)
+                    
+                    # Solo guardar el histórico con fecha actual
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                     """)
+                    
                     with engine.begin() as conn:
                         conn.execute(query_update, {
                             "gestion": gestion,
@@ -666,77 +681,62 @@ else:
                             "gestion": gestion,
                             "comentario": comentario
                         })
+                    
                     st.success("Gestión guardada exitosamente.")
+                    
+                    # NO usar st.rerun() para mantener jerarquía fija durante el día
+                    # La jerarquía solo cambiará mañana con el SP nocturno
+                    
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
 
 
 
-
 ##--------------------------------------------------------------sin friccion------------------------------------------------------
     elif page == "CAMPAÑA SIN FRICCION":
-        # Cargar los datos desde SQL (sin ORDER BY, ordenaremos en Pandas)
+        # 1) Cargar los datos desde SQL
         query_sinfriccion = "SELECT * FROM CRM_SINFRICCION_Final where gestion <> 'Numero equivocado'"
         data_sinfriccion = pd.read_sql(query_sinfriccion, engine)
 
-        # Filtrar solo los clientes asignados al gestor autenticado
+        # 2) Filtrar solo los clientes asignados al gestor autenticado
         data_sinfriccion = data_sinfriccion[
             data_sinfriccion["GestorVirtual"] == gestor_autenticado
         ].copy()
 
-        # Eliminar los clientes sin ID válido
+        # 3) Eliminar los clientes sin ID válido
         data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
 
-        # Asegurarnos de que FECHA_GESTION sea datetime
+        # 4) Asegurarnos de que FECHA_GESTION sea datetime
         data_sinfriccion["FECHA_GESTION"] = pd.to_datetime(
-            data_sinfriccion["FECHA_GESTION"]
+            data_sinfriccion["FECHA_GESTION"], errors="coerce"
         )
 
-        # ¿Hay al menos un registro sin gestión?
-        hay_null = data_sinfriccion["Gestion"].isna().any()
-
-        if hay_null:
-            # 1) Crear flag para los NULL
-            data_sinfriccion["Gestion_NULL_Flag"] = data_sinfriccion["Gestion"].isna().astype(int)
-            # 2) Ordenar: primero los no gestionados (flag=1), luego el resto,
-            #    ambos grupos por FECHA_GESTION ascendente
-            data_sinfriccion = (
-                data_sinfriccion
-                .sort_values(
-                    by=["Gestion_NULL_Flag", "FECHA_GESTION"],
-                    ascending=[False, True]
-                )
-                .reset_index(drop=True)
-            )
-            # 3) Borrar columna auxiliar
-            data_sinfriccion.drop(columns=["Gestion_NULL_Flag"], inplace=True)
+        # 5) LÓGICA DE JERARQUÍA FIJA - usar NumeroCliente de la BD
+        # La columna de jerarquía en BD se llama "NumeroCliente"
+        if "NumeroCliente" in data_sinfriccion.columns and not data_sinfriccion["NumeroCliente"].isna().all():
+            # Si ya existe jerarquía en BD, mantenerla tal como está
+            data_sinfriccion = data_sinfriccion.sort_values(by=["NumeroCliente"], ascending=True).reset_index(drop=True)
+            data_sinfriccion["jerarquia"] = data_sinfriccion["NumeroCliente"]
         else:
-            # No hay NULL: sólo orden por FECHA_GESTION ascendente
+            # Crear jerarquía solo si no existe en BD
+            # Ordenar: primero sin gestión (fecha null), luego por fecha ascendente  
+            data_sinfriccion["orden_auxiliar"] = data_sinfriccion["FECHA_GESTION"].fillna(pd.Timestamp.min)
             data_sinfriccion = (
                 data_sinfriccion
-                .sort_values(by=["FECHA_GESTION"], ascending=True)
+                .sort_values(by=["orden_auxiliar"], ascending=True)
                 .reset_index(drop=True)
             )
-
-
-        # Filtrar filas donde ID_Cliente no sea NULL (en Pandas, NaN)
-        data_sinfriccion = data_sinfriccion.dropna(subset=["ID_Cliente"])
-
-        data_sinfriccion["jerarquia"] = data_sinfriccion.index + 1
-
-        
-        # Agregar columna Jerarquía si no existe
-        if "jerarquia" not in data_sinfriccion.columns:
-            data_sinfriccion.insert(0, "jerarquia", range(1, len(data_sinfriccion) + 1))
+            data_sinfriccion["jerarquia"] = data_sinfriccion.index + 1
+            data_sinfriccion.drop(columns=["orden_auxiliar"], inplace=True)
 
         if data_sinfriccion.empty:
             st.warning("No hay datos en la campaña sin fricción.")
         else:
-            filtered_data = data_sinfriccion
-            unique_clients = filtered_data.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
+            # 6) Preparar lista única de clientes (manteniendo jerarquía original)
+            unique_clients = data_sinfriccion.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
             total_clients = len(unique_clients)
 
-            # Sección de búsqueda
+            # 7) UI de búsqueda por jerarquía o ID
             st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
             cols = st.columns([1, 1])
             with cols[0]:
@@ -764,14 +764,14 @@ else:
                 else:
                     st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
 
-            # Validar el índice del cliente actual
+            # 8) Validar el índice del cliente actual
             if "cliente_index_sinfriccion" not in st.session_state:
                 st.session_state["cliente_index_sinfriccion"] = 0
             cliente_index = st.session_state["cliente_index_sinfriccion"]
             cliente_index = max(0, min(cliente_index, total_clients - 1))
             st.session_state["cliente_index_sinfriccion"] = cliente_index
 
-            # Botones de navegación
+            # 9) Botones de navegación
             cols_navigation = st.columns([1, 1])
             with cols_navigation[0]:
                 if st.button("Anterior"):
@@ -780,10 +780,10 @@ else:
                 if st.button("Siguiente"):
                     st.session_state["cliente_index_sinfriccion"] = min(cliente_index + 1, total_clients - 1)
 
-            # Obtener cliente actual
+            # 10) Obtener cliente actual
             cliente_actual = unique_clients.iloc[st.session_state["cliente_index_sinfriccion"]]
 
-            # Mostrar información del cliente actual
+            # 11) Mostrar información del cliente actual
             st.subheader("Información del Cliente - Campaña Sin Fricción")
             cols = st.columns(2)
             with cols[0]:
@@ -798,27 +798,38 @@ else:
                 st.write(f"**Saldo Actual:** {cliente_actual['SaldoActual']}")
                 st.write(f"**Limite de crédito:** {cliente_actual['Limite_credito']}")
                 st.write(f"**Credito disponible:** {cliente_actual['Credito_Disponible']}")
-            #  st.write("**Fecha última gestión:** "f"{cliente_actual['FECHA_GESTION']:%Y/%m/%d}")
-                # Intentar convertir a fecha; NaT si falla o es nulo
-                raw_fecha = cliente_actual.get("FECHA_GESTION", None)
-                fecha_dt = pd.to_datetime(raw_fecha, errors="coerce")  # convierte invalidos a NaT
-                if pd.isna(fecha_dt):
-                    fecha_str = "N/A"
+                
+                # Formatear enganches como porcentajes
+                enganche_no_motos = cliente_actual.get('Enganche_No_Motos', 0)
+                enganche_motos = cliente_actual.get('Enganche_Motos', 0)
+                
+                if pd.notna(enganche_no_motos) and enganche_no_motos != 0:
+                    enganche_no_motos_pct = f"{float(enganche_no_motos) * 100:.0f}%"
                 else:
-                    fecha_str = fecha_dt.strftime("%Y/%m/%d")
-
+                    enganche_no_motos_pct = "0%"
+                    
+                if pd.notna(enganche_motos) and enganche_motos != 0:
+                    enganche_motos_pct = f"{float(enganche_motos) * 100:.0f}%"
+                else:
+                    enganche_motos_pct = "0%"
+                    
+                st.write(f"**Enganche No Motos:** {enganche_no_motos_pct}")
+                st.write(f"**Enganche Motos:** {enganche_motos_pct}")
+                
+                # Fecha última gestión
+                raw_fecha = cliente_actual.get("FECHA_GESTION", None)
+                fecha_dt = pd.to_datetime(raw_fecha, errors="coerce")
+                fecha_str = fecha_dt.strftime("%Y/%m/%d") if pd.notna(fecha_dt) else "N/A"
                 st.write(f"**Fecha última gestión:** {fecha_str}")
 
                 st.markdown(
                     f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
                     unsafe_allow_html=True,
                 )
-            st.markdown('</div>', unsafe_allow_html=True)
-                
 
             st.divider()
 
-            # Gestión del Cliente
+            # 12) Formulario de gestión
             st.subheader("Gestiones del Cliente")
             gestion_key = f"gestion_sinfriccion_{cliente_actual['ID_Cliente']}"
             comentario_key = f"comentario_sinfriccion_{cliente_actual['ID_Cliente']}"
@@ -828,7 +839,7 @@ else:
                     "Gestión",
                     options=[None, "Interesado", "No interesado", "Recado", "Sin contacto", "Numero equivocado"],
                     index=0 if st.session_state.get(gestion_key) is None else
-                          ["Interesado", "No interesado", "Recado", "Sin contacto", "Numero equivocado"].index(st.session_state[gestion_key]),
+                        ["Interesado", "No interesado", "Recado", "Sin contacto", "Numero equivocado"].index(st.session_state[gestion_key]),
                 )
                 comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
                 submit_button = st.form_submit_button("Guardar Gestión")
@@ -838,19 +849,22 @@ else:
                 st.session_state[comentario_key] = comentario
                 try:
                     gestor = st.session_state.get("gestor") 
-                    ## FECHA_GESTION = GETDATE() ==> se elimino este dato de  UPDATE CRM_SINFRICCION_Final solo se guardara en  INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION
-                    ## para actualizar al dia siguiente con el sp [Actualizar_CRM_SINFRICCION] y no afecte en la jerarquia diara 
+                    
+                    # IMPORTANTE: NO actualizar FECHA_GESTION en CRM_SINFRICCION_Final
+                    # Solo actualizar Gestion y Comentario
+                    # La fecha se actualizará mañana con el SP nocturno
                     query_update = text("""
                         UPDATE CRM_SINFRICCION_Final
-                        SET Gestion = :gestion, Comentario = :comentario 
+                        SET Gestion = :gestion, 
+                            Comentario = :comentario 
                         WHERE ID_Cliente = :id_cliente
                     """)
 
+                    # Solo guardar el histórico con fecha actual
                     query_insert = text("""
                         INSERT INTO GESTIONES_CAMPAÑA_SINFRICCION (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                         VALUES (:id_cliente, 'CAMPAÑA SIN FRICCION', GETDATE(), :gestor, :gestion, :comentario)
                     """)
-
 
                     with engine.begin() as conn:
                         conn.execute(query_update, {
@@ -859,16 +873,21 @@ else:
                             "id_cliente": cliente_actual["ID_Cliente"],
                         })
                         conn.execute(query_insert, {
-                            "id_cliente": int(cliente_actual["ID_Cliente"]),  # Convertimos a int
-                            "gestor": gestor,  # Asegúrate de pasar el nombre del gestor aquí
+                            "id_cliente": int(cliente_actual["ID_Cliente"]),
+                            "gestor": gestor,
                             "gestion": gestion,
                             "comentario": comentario
                         })
+                        
                     st.success("Gestión guardada exitosamente.")
+                    
+                    # NO usar st.rerun() para mantener jerarquía fija durante el día
+                    # La jerarquía solo cambiará mañana con el SP nocturno
+                    
                 except Exception as e:
                     st.error(f"Error al guardar los cambios: {e}")
 
-    
+   #------------------------------------ INDICADORES -----------------------------------------------#   
 
     elif page == "INDICADORES":
         st.header("📊 Indicadores de gestiones")
