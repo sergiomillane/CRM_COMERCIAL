@@ -538,12 +538,11 @@ else:
         
         # La columna de jerarquía en BD se llama "NumeroCliente"
         if "NumeroCliente" in data_motos.columns and not data_motos["NumeroCliente"].isna().all():
-            # Si ya existe jerarquía en BD, mantenerla tal como está
+            # Ordenar por NumeroCliente pero reindexar la jerarquía desde 1
             data_motos = data_motos.sort_values(by=["NumeroCliente"], ascending=True).reset_index(drop=True)
-            data_motos["jerarquia"] = data_motos["NumeroCliente"]
+            data_motos["jerarquia"] = data_motos.index + 1  # ← SIEMPRE desde 1
         else:
             # Crear jerarquía solo si no existe en BD
-            # Ordenar: primero sin gestión (fecha null), luego por fecha ascendente  
             data_motos["orden_auxiliar"] = data_motos["FECHA_GESTION"].fillna(pd.Timestamp.min)
             data_motos = (
                 data_motos
@@ -719,13 +718,13 @@ else:
 
         # 5) LÓGICA DE JERARQUÍA FIJA - usar NumeroCliente de la BD
         # La columna de jerarquía en BD se llama "NumeroCliente"
+        # La columna de jerarquía en BD se llama "NumeroCliente"
         if "NumeroCliente" in data_sinfriccion.columns and not data_sinfriccion["NumeroCliente"].isna().all():
-            # Si ya existe jerarquía en BD, mantenerla tal como está
+            # Ordenar por NumeroCliente pero reindexar la jerarquía desde 1
             data_sinfriccion = data_sinfriccion.sort_values(by=["NumeroCliente"], ascending=True).reset_index(drop=True)
-            data_sinfriccion["jerarquia"] = data_sinfriccion["NumeroCliente"]
+            data_sinfriccion["jerarquia"] = data_sinfriccion.index + 1  # ← SIEMPRE desde 1
         else:
             # Crear jerarquía solo si no existe en BD
-            # Ordenar: primero sin gestión (fecha null), luego por fecha ascendente  
             data_sinfriccion["orden_auxiliar"] = data_sinfriccion["FECHA_GESTION"].fillna(pd.Timestamp.min)
             data_sinfriccion = (
                 data_sinfriccion
