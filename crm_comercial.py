@@ -1215,7 +1215,8 @@ else:
                 st.subheader("Información del Cliente - Campaña Sin Enganche")
                 cols = st.columns(2)
                 with cols[0]:
-                    st.write(f"**ID Cliente:** {cliente_actual['ID_CLIENTE']}")  # CORREGIDO
+                    st.write(f"**Nombre:** {cliente_actual.get('NombreCliente', 'N/A')}")  # NUEVO: Mostrar nombre
+                    st.write(f"**ID Cliente:** {cliente_actual['ID_CLIENTE']}")
                     st.write(f"**Primer Teléfono:** {cliente_actual.get('PrimerTelefono', 'N/A')}")
                     st.write(f"**Segundo Teléfono:** {cliente_actual.get('SegundoTelefono', 'N/A')}")
                     st.write(f"**Jerarquia:** {cliente_actual['jerarquia']}")
