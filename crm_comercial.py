@@ -31,13 +31,13 @@ PERMISOS_CAMPANAS = {
         "EDGAR QUIÑONEZ", "SILVIA LOPEZ"
     ],
     "CAMPAÑA MOTOS": [
-        "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez"
+        "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez", "Carmen Samano"
     ],
     "CAMPAÑA SIN FRICCION": [
-        "Bryan Felix", "Maria Fernanda Zazueta Aguilar"
+        "Bryan Felix", "Maria Fernanda Zazueta Aguilar", "Daniela Boada"
     ],
     "CAMPAÑA SIN ENGANCHE": [
-        "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez"
+        "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez", "Daniela Boada", "Carmen Samano"
     ],
     "CAMPAÑA REFINANCIAMIENTO": [
         "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez", "Bryan Felix"
@@ -52,7 +52,7 @@ PERMISOS_CAMPANAS = {
         "Julissa Iveth Gamez Ramirez", "Bryan Junnyel Rios Castro", "Maria Fernanda Zazueta Aguilar",
         "Karely Elizabeth Olmeda Gutierrez", "Lizbeth Guadalupe Contreras Leal",
         "Melissa Angulo Rios", "Oscar Eduardo Sánchez Grande", "Reyna Berenice Salazar Cabrera",
-        "NANCY BURGOS", "Lorena Andrade Perez", "EDGAR QUIÑONEZ", "SILVIA LOPEZ"
+        "NANCY BURGOS", "Lorena Andrade Perez", "EDGAR QUIÑONEZ", "SILVIA LOPEZ", "Daniela Boada", "Carmen Samano"
     ]
 }
 
@@ -363,6 +363,8 @@ usuarios = {
     "sergio_millan": {"gestor": "Sergio Millan", "password": "admin_vb3$", "admin": True},
     "rafael_plata": {"gestor": "Rafael Plata", "password": "admin_vb3$", "admin": True}, 
     "administrador": {"gestor": "Administrador", "password": "admin_vb3$", "admin": True},
+    "daniela_boada": {"gestor": "Daniela Boada", "password": "Ok7Wsm", "admin": False},
+    "carmen_samano": {"gestor": "Carmen Samano", "password": "Ok7Wsm", "admin": False},
 }
 
 # Función de inicio de sesión
