@@ -542,6 +542,7 @@ else:
                     st.write(f"**Gestion:** {cliente_actual['Gestion']}")
                     st.write(f"**Comentario:** {cliente_actual['Comentario']}")
                     st.write(f"**Categoria:** {cliente_actual['Segmento']}")
+                    st.write(f"**Segmento originación:** {cliente_actual.get('SegmentoOriginacion', 'N/A')}")
                     st.write(f"**Jerarquia:** {cliente_actual['Jerarquia']}")
                     st.markdown(
                         f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
@@ -607,7 +608,10 @@ else:
                 st.warning("No hay clientes asignados en esta campaña.")
             else:
                 filtered_data = data_cat
-                unique_clients = filtered_data.drop_duplicates(subset=["ID_CLIENTE"]).sort_values(by="Jerarquia").reset_index(drop=True)
+                # Crear columna auxiliar para ordenamiento prioritario: Express primero (0), luego otros (1)
+                filtered_data_unique = filtered_data.drop_duplicates(subset=["ID_CLIENTE"])
+                filtered_data_unique['_sort_priority'] = filtered_data_unique['SegmentoOriginacion'].apply(lambda x: 0 if x == 'Express' else 1)
+                unique_clients = filtered_data_unique.sort_values(by=['_sort_priority', 'Jerarquia']).drop('_sort_priority', axis=1).reset_index(drop=True)
                 total_clients = len(unique_clients)
 
                 # Sección de búsqueda
@@ -714,6 +718,7 @@ else:
                     st.write(f"**Gestion:** {cliente_actual['Gestion']}")
                     st.write(f"**Comentario:** {cliente_actual['Comentario']}")
                     st.write(f"**Categoria:** {cliente_actual['Segmento']}")
+                    st.write(f"**Segmento originación:** {cliente_actual.get('SegmentoOriginacion', 'N/A')}")
                     st.write(f"**Jerarquia:** {cliente_actual['Jerarquia']}")
                     st.markdown(
                         f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>",
