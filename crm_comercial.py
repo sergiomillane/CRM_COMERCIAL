@@ -404,8 +404,26 @@ else:
 
     gestor_autenticado = st.session_state["gestor"].strip()
     is_admin = st.session_state["admin"]
-    query = "SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC" if is_admin else f"SELECT * FROM CRM_COMERCIAL WHERE Gestor = '{gestor_autenticado}' ORDER BY Jerarquia ASC "
+
+    if is_admin:
+        query = "SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC"
+    else:
+        # Normalizar nombre (quitar acentos y mayúsculas)
+        def normalizar_nombre(nombre):
+            traduccion = str.maketrans("ÁÉÍÓÚÑ", "AEIOUN")
+            return nombre.upper().translate(traduccion)
+
+        # Tomar los dos primeros componentes del nombre (nombre + primer apellido)
+        gestor_sql = " ".join(normalizar_nombre(gestor_autenticado).split()[:2])
+
+        query = f"""
+            SELECT * FROM CRM_COMERCIAL
+            WHERE UPPER(Gestor) LIKE '%{gestor_sql}%'
+            ORDER BY Jerarquia ASC
+        """
+
     data = pd.read_sql(query, engine)
+
 
     # Sidebar para navegación y botón de cerrar sesión
     st.sidebar.title(f"Gestor: {gestor_autenticado}")
