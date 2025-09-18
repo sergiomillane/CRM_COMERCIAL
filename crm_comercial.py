@@ -28,7 +28,7 @@ PERMISOS_CAMPANAS = {
         "Julissa Iveth Gamez Ramirez", "Karely Elizabeth Olmeda Gutierrez",
         "Lizbeth Guadalupe Contreras Leal", "Melissa Angulo Rios",
         "Oscar Eduardo Sánchez Grande", "Reyna Berenice Salazar Cabrera",
-        "EDGAR QUIÑONEZ", "SILVIA LOPEZ"
+        "EDGAR QUIÑONEZ", "SILVIA LOPEZ", "NANCY BURGOS", "Lorena Andrade Perez"
     ],
     "CAMPAÑA MOTOS": [
         "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez", "Carmen Samano"
