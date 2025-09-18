@@ -641,7 +641,7 @@ else:
             st.warning("Ups! No tienes acceso a esta pestaña:(")
         else:
             data_cat = data[
-                (data["Canal"] == "Originacion") &
+                (data["Canal"].isin(["Originacion", "CAT"]))&
                 (data["Gestor"].apply(lambda x: normalizar_nombre(str(x))) == gestor_normalizado)
             ]
 
