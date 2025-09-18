@@ -5,6 +5,18 @@ from sqlalchemy.sql import text
 import plotly.express as px
 
 # =============================================
+# FUNCIÓN PARA NORMALIZAR NOMBRES
+# =============================================
+def normalizar_nombre(nombre):
+    """Convierte a mayúsculas, elimina tildes y espacios extras"""
+    if not isinstance(nombre, str):
+        return ""
+    nombre = nombre.upper().strip()
+    traduccion = str.maketrans("ÁÉÍÓÚÑ", "AEIOUN")
+    return nombre.translate(traduccion)
+
+
+# =============================================
 # CONFIGURACIÓN DE PERMISOS POR CAMPAÑA
 # =============================================
 PERMISOS_CAMPANAS = {
@@ -405,6 +417,9 @@ else:
     gestor_autenticado = st.session_state["gestor"].strip()
     is_admin = st.session_state["admin"]
 
+    gestor_normalizado = normalizar_nombre(gestor_autenticado)
+
+
     if is_admin:
         query = "SELECT * FROM CRM_COMERCIAL ORDER BY Jerarquia ASC"
     else:
@@ -447,7 +462,11 @@ else:
         if not tiene_permiso(gestor_autenticado, "CAT"):
             st.warning("Ups! No tienes acceso a esta pestaña:(")
         else:
-            data_cat = data[data["Canal"]=="CAT"]
+            data_cat = data[
+                (data["Canal"] == "CAT") &
+                (data["Gestor"].apply(lambda x: normalizar_nombre(str(x))) == gestor_normalizado)
+            ]
+
             if data_cat.empty:
                 st.warning("No hay clientes asignados en esta campaña.")
             else:
@@ -621,7 +640,11 @@ else:
         if not tiene_permiso(gestor_autenticado, "ORIGINACION DE CREDITO"):
             st.warning("Ups! No tienes acceso a esta pestaña:(")
         else:
-            data_cat = data[data["Canal"]=="Originacion"]
+            data_cat = data[
+                (data["Canal"] == "Originacion") &
+                (data["Gestor"].apply(lambda x: normalizar_nombre(str(x))) == gestor_normalizado)
+            ]
+
             if data_cat.empty:
                 st.warning("No hay clientes asignados en esta campaña.")
             else:
