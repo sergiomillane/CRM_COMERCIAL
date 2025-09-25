@@ -54,6 +54,9 @@ PERMISOS_CAMPANAS = {
     "CAMPAÑA REFINANCIAMIENTO": [
         "Bryan Junnyel Rios Castro", "NANCY BURGOS", "Lorena Andrade Perez", "Bryan Felix"
     ],
+    "10% DE DESCUENTO": [
+        "NANCY BURGOS", "Carmen Samano"
+    ],
     "INDICADORES": [
         # Todos los usuarios pueden ver indicadores
         "Ana Laura Rivera Inzunza", "Cinthia Guadalupe Checa Robles", 
@@ -444,12 +447,13 @@ else:
     st.sidebar.title(f"Gestor: {gestor_autenticado}")
     st.sidebar.markdown("---")
     page = st.sidebar.radio("Ir a", [
-        "CAT", 
-        "ORIGINACION DE CREDITO", 
-        "CAMPAÑA MOTOS", 
+        "CAT",
+        "ORIGINACION DE CREDITO",
+        "CAMPAÑA MOTOS",
         "CAMPAÑA SIN FRICCION",
         "CAMPAÑA SIN ENGANCHE",
         "CAMPAÑA REFINANCIAMIENTO",
+        "10% DE DESCUENTO",
         "INDICADORES"
     ])
     st.sidebar.markdown("---")
@@ -1533,6 +1537,153 @@ else:
                         
                         st.success("Gestión guardada exitosamente.")
                         
+                    except Exception as e:
+                        st.error(f"Error al guardar los cambios: {e}")
+
+    elif page == "10% DE DESCUENTO":
+        # Verificar permisos
+        if not tiene_permiso(gestor_autenticado, "10% DE DESCUENTO"):
+            st.warning("Ups! No tienes acceso a esta pestaña :(")
+        else:
+            # 1) Cargar datos
+            query_descuento = "SELECT * FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento WITH (NOLOCK)"
+            data_descuento = pd.read_sql(query_descuento, engine)
+
+            # 2) Lógica de división 50/50 entre Nancy y Carmen
+            if not data_descuento.empty:
+                # Ordenar por ID_CLIENTE para consistencia
+                data_descuento = data_descuento.sort_values('ID_CLIENTE').reset_index(drop=True)
+
+                # Crear división 50/50
+                total_registros = len(data_descuento)
+                mitad = total_registros // 2
+
+                # Asignar gestores
+                data_descuento['GestorAsignado'] = ''
+                data_descuento.loc[:mitad-1, 'GestorAsignado'] = 'NANCY BURGOS'
+                data_descuento.loc[mitad:, 'GestorAsignado'] = 'Carmen Samano'
+
+                # Filtrar por gestor actual
+                data_descuento = data_descuento[data_descuento["GestorAsignado"] == gestor_autenticado].copy()
+                data_descuento = data_descuento.dropna(subset=["ID_CLIENTE"])
+
+            # 3) Jerarquía basada en ID_CLIENTE
+            if not data_descuento.empty:
+                data_descuento = data_descuento.sort_values(by=["ID_CLIENTE"], ascending=True).reset_index(drop=True)
+                data_descuento["jerarquia"] = data_descuento.index + 1
+
+            if data_descuento.empty:
+                st.warning("No hay datos asignados para ti en la campaña 10% de descuento.")
+            else:
+                # 4) Preparar lista única de clientes
+                unique_clients = data_descuento.drop_duplicates(subset=["ID_CLIENTE"]).reset_index(drop=True)
+                total_clients = len(unique_clients)
+
+                # 5) UI de búsqueda por jerarquía o ID
+                st.markdown("<div style='font-size:16px; font-weight:bold;'>Busqueda por Jerarquia</div>", unsafe_allow_html=True)
+                cols = st.columns([1, 1])
+                with cols[0]:
+                    input_jerarquia = st.text_input("Borre el numero antes de usar el botón de siguiente", "", help="Ingrese la jerarquía del cliente y presione Enter")
+                with cols[1]:
+                    input_id_cliente = st.text_input("ID_CLIENTE", "", help="Ingrese el ID del cliente y presione Enter")
+
+                if input_jerarquia:
+                    try:
+                        input_jerarquia = int(input_jerarquia)
+                        idx = unique_clients[unique_clients["jerarquia"] == input_jerarquia].index
+                        if idx.size:
+                            st.session_state["cliente_index_descuento"] = idx[0]
+                        else:
+                            st.warning(f"No se encontró un cliente con jerarquía {input_jerarquia}.")
+                    except ValueError:
+                        st.error("Por favor, ingrese un número válido.")
+
+                if input_id_cliente:
+                    try:
+                        input_id_cliente = int(input_id_cliente) if input_id_cliente.isdigit() else input_id_cliente
+                        idx = unique_clients[unique_clients["ID_CLIENTE"] == input_id_cliente].index
+                        if idx.size:
+                            st.session_state["cliente_index_descuento"] = idx[0]
+                        else:
+                            st.warning(f"No se encontró un cliente con ID {input_id_cliente}.")
+                    except ValueError:
+                        st.error("Por favor, ingrese un ID válido.")
+
+                # 6) Inicializar y acotar índice
+                if "cliente_index_descuento" not in st.session_state:
+                    st.session_state["cliente_index_descuento"] = 0
+                cliente_index = st.session_state["cliente_index_descuento"]
+                cliente_index = max(0, min(cliente_index, total_clients - 1))
+                st.session_state["cliente_index_descuento"] = cliente_index
+
+                # 7) Botones de navegación
+                nav_cols = st.columns([1, 1])
+                with nav_cols[0]:
+                    if st.button("Anterior"):
+                        st.session_state["cliente_index_descuento"] = max(cliente_index - 1, 0)
+                with nav_cols[1]:
+                    if st.button("Siguiente"):
+                        st.session_state["cliente_index_descuento"] = min(cliente_index + 1, total_clients - 1)
+
+                cliente_actual = unique_clients.iloc[st.session_state["cliente_index_descuento"]]
+
+                # 8) Mostrar información del cliente
+                st.subheader("Información del Cliente - Campaña 10% de Descuento")
+                cols = st.columns(2)
+                with cols[0]:
+                    st.write(f"**ID Cliente:** {cliente_actual.get('ID_CLIENTE', 'N/A')}")
+                    st.write(f"**Nombre:** {cliente_actual.get('NOMBRECLIENTE', 'N/A')}")
+                    st.write(f"**Sucursal:** {cliente_actual.get('SUCURSAL_ULTIPRA', 'N/A')}")
+                    st.write(f"**Núm. Sucursal:** {cliente_actual.get('NUM_SUCURSAL_ULTIMA_COMPRA', 'N/A')}")
+                    st.write(f"**Jerarquia:** {cliente_actual['jerarquia']}")
+
+                with cols[1]:
+                    st.write(f"**Teléfono:** {cliente_actual.get('TELEFONO', 'N/A')}")
+                    st.write(f"**LC Actual:** ${cliente_actual.get('LC_ACTUAL', 'N/A'):,.2f}" if pd.notna(cliente_actual.get('LC_ACTUAL')) else "**LC Actual:** N/A")
+                    st.write(f"**Saldo Pendiente:** ${cliente_actual.get('SALDO_PENDIENTE', 'N/A'):,.2f}" if pd.notna(cliente_actual.get('SALDO_PENDIENTE')) else "**Saldo Pendiente:** N/A")
+                    st.write(f"**LC Disponible:** ${cliente_actual.get('LC_DISPONIBLE', 'N/A'):,.2f}" if pd.notna(cliente_actual.get('LC_DISPONIBLE')) else "**LC Disponible:** N/A")
+                    st.write(f"**Gestor Asignado:** {cliente_actual.get('GestorAsignado', 'N/A')}")
+
+                st.divider()
+
+                # 9) Formulario de gestión
+                st.subheader("Gestiones del Cliente")
+                gestion_key = f"gestion_descuento_{cliente_actual['ID_CLIENTE']}"
+                comentario_key = f"comentario_descuento_{cliente_actual['ID_CLIENTE']}"
+
+                with st.form(key=f"gestion_form_descuento"):
+                    gestion = st.selectbox(
+                        "Gestión",
+                        options=[None, "Interesado", "No interesado", "Llamar Después", "Recado", "Sin contacto", "Numero equivocado"],
+                        index=0 if st.session_state.get(gestion_key) is None else
+                            ["Interesado", "No interesado", "Llamar Después", "Recado", "Sin contacto", "Numero equivocado"].index(
+                                st.session_state[gestion_key]
+                            ) + 1,
+                    )
+                    comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
+                    submit_button = st.form_submit_button("Guardar Gestión")
+
+                if submit_button:
+                    st.session_state[gestion_key] = gestion
+                    st.session_state[comentario_key] = comentario
+                    try:
+                        gestor = st.session_state.get("gestor")
+
+                        query_insert = text("""
+                            INSERT INTO GESTIONES_CAMPAÑA_10_DESCUENTO (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                            VALUES (:id_cliente, '10% DE DESCUENTO', GETDATE(), :gestor, :gestion, :comentario)
+                        """)
+
+                        with engine.begin() as conn:
+                            conn.execute(query_insert, {
+                                "id_cliente": str(cliente_actual["ID_CLIENTE"]),
+                                "gestor": gestor,
+                                "gestion": gestion,
+                                "comentario": comentario
+                            })
+
+                        st.success("Gestión guardada exitosamente.")
+
                     except Exception as e:
                         st.error(f"Error al guardar los cambios: {e}")
 
