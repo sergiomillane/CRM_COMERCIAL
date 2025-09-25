@@ -1557,7 +1557,7 @@ else:
                     a.COMENTARIO_ULTIMO
                 FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento c
                 INNER JOIN ASIGNACION_CLIENTES_10_DESCUENTO a ON c.ID_CLIENTE = a.ID_CLIENTE
-                WHERE a.ACTIVO = 1 AND a.GESTOR_ASIGNADO = :gestor
+                WHERE a.ACTIVO = 1 AND a.GESTOR_ASIGNADO = %(gestor)s
                 ORDER BY a.JERARQUIA
             """
             data_descuento = pd.read_sql(query_descuento, engine, params={"gestor": gestor_autenticado})
@@ -1627,6 +1627,13 @@ else:
                     st.write(f"**Sucursal:** {cliente_actual.get('SUCURSAL_ULTIPRA', 'N/A')}")
                     st.write(f"**Núm. Sucursal:** {cliente_actual.get('NUM_SUCURSAL_ULTIMA_COMPRA', 'N/A')}")
                     st.write(f"**Jerarquia:** {cliente_actual['jerarquia']}")
+
+                    enganche = cliente_actual.get('ENGANCHE', 0)
+                    if pd.notna(enganche) and enganche != 0:
+                        enganche_porcentaje = f"{float(enganche) * 100:.1f}%"
+                    else:
+                        enganche_porcentaje = "0.0%"
+                    st.write(f"**Enganche:** {enganche_porcentaje}")
 
                 with cols[1]:
                     st.write(f"**Teléfono:** {cliente_actual.get('TELEFONO', 'N/A')}")

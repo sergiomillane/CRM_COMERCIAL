@@ -1,0 +1,68 @@
+sqlalchemy.exc.ProgrammingError: (pymssql.exceptions.ProgrammingError) (102, b"Incorrect syntax near ':'.DB-Lib error message 20018, severity 15:\nGeneral SQL Server error: Check messages from the SQL Server\n")
+[SQL: 
+                SELECT
+                    c.*,
+                    a.GESTOR_ASIGNADO as GestorAsignado,
+                    a.JERARQUIA as jerarquia,
+                    a.GESTIONADO,
+                    a.ULTIMA_GESTION,
+                    a.FECHA_ULTIMA_GESTION,
+                    a.COMENTARIO_ULTIMO
+                FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento c
+                INNER JOIN ASIGNACION_CLIENTES_10_DESCUENTO a ON c.ID_CLIENTE = a.ID_CLIENTE
+                WHERE a.ACTIVO = 1 AND a.GESTOR_ASIGNADO = :gestor
+                ORDER BY a.JERARQUIA
+            ]
+[parameters: {'gestor': 'NANCY BURGOS'}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+
+File "C:\Users\sergio.millan\Desktop\crm_comercial\crm_comercial.py", line 1563, in <module>
+    data_descuento = pd.read_sql(query_descuento, engine, params={"gestor": gestor_autenticado})
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\io\sql.py", line 734, in read_sql
+    return pandas_sql.read_query(
+           ~~~~~~~~~~~~~~~~~~~~~^
+        sql,
+        ^^^^
+    ...<6 lines>...
+        dtype=dtype,
+        ^^^^^^^^^^^^
+    )
+    ^
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\io\sql.py", line 1836, in read_query
+    result = self.execute(sql, params)
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\pandas\io\sql.py", line 1659, in execute
+    return self.con.exec_driver_sql(sql, *args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\base.py", line 1776, in exec_driver_sql
+    ret = self._execute_context(
+        dialect,
+    ...<5 lines>...
+        distilled_parameters,
+    )
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\base.py", line 1843, in _execute_context
+    return self._exec_single_context(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        dialect, context, statement, parameters
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\base.py", line 1983, in _exec_single_context
+    self._handle_dbapi_exception(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        e, str_statement, effective_parameters, cursor, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\base.py", line 2352, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\base.py", line 1964, in _exec_single_context
+    self.dialect.do_execute(
+    ~~~~~~~~~~~~~~~~~~~~~~~^
+        cursor, str_statement, effective_parameters, context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+File "C:\Users\sergio.millan\AppData\Local\Programs\Python\Python313\Lib\site-packages\sqlalchemy\engine\default.py", line 945, in do_execute
+    cursor.execute(statement, parameters)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+File "src/pymssql/_pymssql.pyx", line 462, in pymssql._pymssql.Cursor.execute
