@@ -1545,32 +1545,23 @@ else:
         if not tiene_permiso(gestor_autenticado, "10% DE DESCUENTO"):
             st.warning("Ups! No tienes acceso a esta pestaña :(")
         else:
-            # 1) Cargar datos
-            query_descuento = "SELECT * FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento WITH (NOLOCK)"
-            data_descuento = pd.read_sql(query_descuento, engine)
-
-            # 2) Lógica de división 50/50 entre Nancy y Carmen
-            if not data_descuento.empty:
-                # Ordenar por ID_CLIENTE para consistencia
-                data_descuento = data_descuento.sort_values('ID_CLIENTE').reset_index(drop=True)
-
-                # Crear división 50/50
-                total_registros = len(data_descuento)
-                mitad = total_registros // 2
-
-                # Asignar gestores
-                data_descuento['GestorAsignado'] = ''
-                data_descuento.loc[:mitad-1, 'GestorAsignado'] = 'NANCY BURGOS'
-                data_descuento.loc[mitad:, 'GestorAsignado'] = 'Carmen Samano'
-
-                # Filtrar por gestor actual
-                data_descuento = data_descuento[data_descuento["GestorAsignado"] == gestor_autenticado].copy()
-                data_descuento = data_descuento.dropna(subset=["ID_CLIENTE"])
-
-            # 3) Jerarquía basada en ID_CLIENTE
-            if not data_descuento.empty:
-                data_descuento = data_descuento.sort_values(by=["ID_CLIENTE"], ascending=True).reset_index(drop=True)
-                data_descuento["jerarquia"] = data_descuento.index + 1
+            # 1) Cargar datos usando la tabla de asignación fija
+            query_descuento = """
+                SELECT
+                    c.*,
+                    a.GESTOR_ASIGNADO as GestorAsignado,
+                    a.JERARQUIA as jerarquia,
+                    a.GESTIONADO,
+                    a.ULTIMA_GESTION,
+                    a.FECHA_ULTIMA_GESTION,
+                    a.COMENTARIO_ULTIMO
+                FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento c
+                INNER JOIN ASIGNACION_CLIENTES_10_DESCUENTO a ON c.ID_CLIENTE = a.ID_CLIENTE
+                WHERE a.ACTIVO = 1 AND a.GESTOR_ASIGNADO = :gestor
+                ORDER BY a.JERARQUIA
+            """
+            data_descuento = pd.read_sql(query_descuento, engine, params={"gestor": gestor_autenticado})
+            data_descuento = data_descuento.dropna(subset=["ID_CLIENTE"])
 
             if data_descuento.empty:
                 st.warning("No hay datos asignados para ti en la campaña 10% de descuento.")
@@ -1644,6 +1635,21 @@ else:
                     st.write(f"**LC Disponible:** ${cliente_actual.get('LC_DISPONIBLE', 'N/A'):,.2f}" if pd.notna(cliente_actual.get('LC_DISPONIBLE')) else "**LC Disponible:** N/A")
                     st.write(f"**Gestor Asignado:** {cliente_actual.get('GestorAsignado', 'N/A')}")
 
+                    # Estado de gestión
+                    gestionado = cliente_actual.get('GESTIONADO', 0) == 1
+                    st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if gestionado else 'No'}</span>", unsafe_allow_html=True)
+
+                    if gestionado:
+                        ultima_gestion = cliente_actual.get('ULTIMA_GESTION', 'N/A')
+                        fecha_gestion = cliente_actual.get('FECHA_ULTIMA_GESTION')
+                        fecha_str = pd.to_datetime(fecha_gestion, errors="coerce").strftime("%Y/%m/%d %H:%M") if pd.notna(fecha_gestion) else "N/A"
+                        st.write(f"**Última Gestión:** {ultima_gestion}")
+                        st.write(f"**Fecha Última Gestión:** {fecha_str}")
+
+                        comentario_anterior = cliente_actual.get('COMENTARIO_ULTIMO', '')
+                        if comentario_anterior:
+                            st.write(f"**Comentario Anterior:** {comentario_anterior}")
+
                 st.divider()
 
                 # 9) Formulario de gestión
@@ -1669,12 +1675,24 @@ else:
                     try:
                         gestor = st.session_state.get("gestor")
 
+                        # Query para insertar en tabla de gestiones
                         query_insert = text("""
                             INSERT INTO GESTIONES_CAMPAÑA_10_DESCUENTO (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                             VALUES (:id_cliente, '10% DE DESCUENTO', GETDATE(), :gestor, :gestion, :comentario)
                         """)
 
+                        # Query para actualizar la tabla de asignación
+                        query_update_asignacion = text("""
+                            UPDATE ASIGNACION_CLIENTES_10_DESCUENTO
+                            SET GESTIONADO = 1,
+                                ULTIMA_GESTION = :gestion,
+                                FECHA_ULTIMA_GESTION = GETDATE(),
+                                COMENTARIO_ULTIMO = :comentario
+                            WHERE ID_CLIENTE = :id_cliente
+                        """)
+
                         with engine.begin() as conn:
+                            # Insertar gestión en historial
                             conn.execute(query_insert, {
                                 "id_cliente": str(cliente_actual["ID_CLIENTE"]),
                                 "gestor": gestor,
@@ -1682,7 +1700,15 @@ else:
                                 "comentario": comentario
                             })
 
+                            # Actualizar estado en tabla de asignación
+                            conn.execute(query_update_asignacion, {
+                                "id_cliente": str(cliente_actual["ID_CLIENTE"]),
+                                "gestion": gestion,
+                                "comentario": comentario
+                            })
+
                         st.success("Gestión guardada exitosamente.")
+                        st.rerun()  # Refrescar para mostrar el nuevo estado
 
                     except Exception as e:
                         st.error(f"Error al guardar los cambios: {e}")
