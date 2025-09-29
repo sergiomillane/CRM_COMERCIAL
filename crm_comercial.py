@@ -1558,7 +1558,10 @@ else:
                 FROM Tabla_Campaña_Clientes_Puntuales_Acreedores_10Porciento c
                 INNER JOIN ASIGNACION_CLIENTES_10_DESCUENTO a ON c.ID_CLIENTE = a.ID_CLIENTE
                 WHERE a.ACTIVO = 1 AND a.GESTOR_ASIGNADO = %(gestor)s
-                ORDER BY a.JERARQUIA
+                ORDER BY
+                    CASE WHEN a.GESTIONADO = 1 THEN 1 ELSE 0 END ASC,
+                    CASE WHEN c.NOMBRECLIENTE IS NULL OR LTRIM(RTRIM(c.NOMBRECLIENTE)) = '' THEN 1 ELSE 0 END ASC,
+                    a.JERARQUIA
             """
             data_descuento = pd.read_sql(query_descuento, engine, params={"gestor": gestor_autenticado})
             data_descuento = data_descuento.dropna(subset=["ID_CLIENTE"])
