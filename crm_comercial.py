@@ -824,7 +824,7 @@ else:
             st.warning("Ups! No tienes acceso a esta pestaña :(")
         else:
             # 1) Cargar datos
-            query_motos = "SELECT * FROM CRM_MOTOS_Final where gestion <> 'Numero equivocado'"
+            query_motos = "SELECT * FROM CRM_MOTOS_FINAL_NUEVA WHERE (gestion IS NULL OR gestion <> 'Numero equivocado')"
             data_motos = pd.read_sql(query_motos, engine)
             
             # 2) Filtrar por gestor y eliminar IDs inválidos
@@ -833,26 +833,54 @@ else:
             
             # 3) Asegurar FECHA_GESTION como datetime
             data_motos["FECHA_GESTION"] = pd.to_datetime(data_motos["FECHA_GESTION"], errors="coerce")
-            
-            # 4) Lógica de jerarquía fija
-            if "NumeroCliente" in data_motos.columns and not data_motos["NumeroCliente"].isna().all():
-                data_motos = data_motos.sort_values(by=["NumeroCliente"], ascending=True).reset_index(drop=True)
-                data_motos["jerarquia"] = data_motos.index + 1
+
+            # 4) Lógica de jerarquía basada en Gestion, Ranking_cliente y Fecha de gestión
+
+            # Crear columna auxiliar para priorizar sin gestionar
+            # (0 = sin gestionar [FECHA_GESTION = NULL], 1 = gestionado [FECHA_GESTION tiene valor])
+            data_motos["gestionado_orden"] = data_motos["FECHA_GESTION"].notna().astype(int)
+
+            # Verificar si todos están gestionados o hay sin gestionar
+            todos_gestionados = data_motos["gestionado_orden"].all()  # True si todos tienen FECHA_GESTION
+
+            if todos_gestionados:
+                # Si todos están gestionados, ordenar SOLO por fecha de gestión más antigua
+                data_motos = data_motos.sort_values(
+                    by=["FECHA_GESTION"],
+                    ascending=[True]
+                ).reset_index(drop=True)
             else:
-                data_motos["orden_auxiliar"] = data_motos["FECHA_GESTION"].fillna(pd.Timestamp.min)
-                data_motos = (
-                    data_motos
-                    .sort_values(by=["orden_auxiliar"], ascending=True)
-                    .reset_index(drop=True)
-                )
-                data_motos["jerarquia"] = data_motos.index + 1
-                data_motos.drop(columns=["orden_auxiliar"], inplace=True)
-            
+                # Si hay sin gestionar, aplicar lógica normal: sin gestionar primero, luego ranking, luego fecha
+                # Mapear valores de Ranking_cliente a números para ordenar (en mayúsculas según BD)
+                ranking_map = {"ALTO": 1, "MEDIO": 2, "BAJO": 3, "NO APLICA": 4}
+                data_motos["ranking_orden"] = data_motos["Ranking_cliente"].map(ranking_map)
+
+                # Rellenar valores nulos con un número alto para que queden al final
+                data_motos["ranking_orden"] = data_motos["ranking_orden"].fillna(999)
+
+                # Para fechas nulas, usar una fecha muy antigua para que no afecten el ordenamiento
+                data_motos["fecha_orden"] = data_motos["FECHA_GESTION"].fillna(pd.Timestamp.min)
+
+                # Ordenar por: 1) Sin gestionar primero, 2) Ranking, 3) Fecha de gestión más antigua
+                data_motos = data_motos.sort_values(
+                    by=["gestionado_orden", "ranking_orden", "fecha_orden"],
+                    ascending=[True, True, True]
+                ).reset_index(drop=True)
+
+                # Eliminar columnas auxiliares
+                data_motos.drop(columns=["ranking_orden", "fecha_orden"], inplace=True)
+
+            # Eliminar columna gestionado_orden
+            data_motos.drop(columns=["gestionado_orden"], inplace=True)
+
             if data_motos.empty:
                 st.warning("No hay datos en la campaña de motos.")
             else:
-                # 5) Preparar lista única de clientes
-                unique_clients = data_motos.drop_duplicates(subset=["ID_Cliente"]).reset_index(drop=True)
+                # 5) Preparar lista única de clientes (mantiene el primer registro según el orden ya establecido)
+                unique_clients = data_motos.drop_duplicates(subset=["ID_Cliente"], keep="first").reset_index(drop=True)
+
+                # Asignar jerarquía después de eliminar duplicados
+                unique_clients["jerarquia"] = unique_clients.index + 1
                 total_clients = len(unique_clients)
                 
                 # 6) UI de búsqueda por jerarquía o ID
@@ -928,7 +956,10 @@ else:
                     fecha_dt = pd.to_datetime(raw_fecha, errors="coerce")
                     fecha_str = fecha_dt.strftime("%Y/%m/%d") if pd.notna(fecha_dt) else "N/A"
                     st.write(f"**Fecha de Última Gestión:** {fecha_str}")
-                    st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(cliente_actual['Gestion']) else 'No'}</span>", unsafe_allow_html=True)
+
+                    # Indicador de gestionado basado en columna Gestion
+                    gestion_valor = cliente_actual.get('Gestion', None)
+                    st.markdown(f"<span class='highlight'>Gestionado: {'Sí' if pd.notna(gestion_valor) else 'No'}</span>", unsafe_allow_html=True)
                 st.divider()
                 
                 # 10) Formulario de gestión
@@ -936,16 +967,30 @@ else:
                 gestion_key = f"gestion_motos_{cliente_actual['ID_Cliente']}"
                 comentario_key = f"comentario_motos_{cliente_actual['ID_Cliente']}"
 
+                # Obtener valores de la BD si existen, sino de session_state
+                gestion_bd = cliente_actual.get('Gestion', None)
+                comentario_bd = cliente_actual.get('Comentario', "")
+
+                # Si no hay valor en session_state, usar el de la BD
+                gestion_actual = st.session_state.get(gestion_key, gestion_bd if pd.notna(gestion_bd) else None)
+                comentario_actual = st.session_state.get(comentario_key, comentario_bd if pd.notna(comentario_bd) else "")
+
                 with st.form(key=f"gestion_form_motos"):
+                    # Opciones de gestión
+                    opciones_gestion = [None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado", "Numero equivocado"]
+
+                    # Determinar índice inicial
+                    if gestion_actual is None or gestion_actual not in opciones_gestion[1:]:
+                        index_inicial = 0
+                    else:
+                        index_inicial = opciones_gestion.index(gestion_actual)
+
                     gestion = st.selectbox(
                         "Gestión",
-                        options=[None, "Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado", "Numero equivocado"],
-                        index=0 if st.session_state.get(gestion_key) is None else
-                            ["Interesado", "Llamar Después", "Recado", "Sin contacto", "No interesado", "Numero equivocado"].index(
-                                st.session_state[gestion_key]
-                            ),
+                        options=opciones_gestion,
+                        index=index_inicial
                     )
-                    comentario = st.text_area("Comentarios", value=st.session_state.get(comentario_key, ""))
+                    comentario = st.text_area("Comentarios", value=comentario_actual)
                     submit_button = st.form_submit_button("Guardar Gestión")
 
                 if submit_button:
@@ -955,14 +1000,15 @@ else:
                         gestor = st.session_state.get("gestor")
                         
                         query_update = text("""
-                            UPDATE CRM_MOTOS_Final
-                            SET Gestion = :gestion, 
-                                Comentario = :comentario
+                            UPDATE CRM_MOTOS_FINAL_NUEVA
+                            SET Gestion = :gestion,
+                                Comentario = :comentario,
+                                FECHA_GESTION = GETDATE()
                             WHERE ID_Cliente = :id_cliente
                         """)
                         
                         query_insert = text("""
-                            INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
+                            INSERT INTO GESTIONES_CAMPAÑAS_COMERCIAL_NUEVA (ID_CLIENTE, CAMPAÑA, FECHA_GESTION, GESTOR, GESTION, COMENTARIO)
                             VALUES (:id_cliente, 'CAMPAÑA MOTOS', GETDATE(), :gestor, :gestion, :comentario)
                         """)
                         
